@@ -1,0 +1,27 @@
+Name,Medium,Protocol,IP mode,Windows,Rhizotron configuration,Injection point,Injection duration (s),Date,Time (CET in hh:mm),"R contact 
+(mean kOhm)","R contact 
+(72 kOhm)",Water Cond μS/cm,Irri time,Irri quantity,Mem block start,Note,Inversion RMS (nb of it) – WR - Residual,Observation,Electrodes positions F=full; P=pct,Instrument,PRD Cycle nb
+last full irrigation: 13/05/2022 through all the upper holes outflow through 72 stopped by 13/05/22,,,,,,,,,,,,,,,,,,,,,
+PRD_ERT_1_130522,50/50 sand/peat,ERT72.sqz,No,x,Full,Cutting 2,0.25,13/5/2022,16:25,7,-,,see irr_log,see irr_log,8828,72 is a small metal tube,,,,Syscal Pro,0
+PRD_MALM_1_130522,50/50 sand/peat,MA72B65Rec.txt,No,x,Full,Cutting 2,0.25,13/5/2022,17:15,6,53,,,,13796,,,,,Syscal Pro,0
+PRD_ERT_2_170522,50/50 sand/peat,ERT72.sqz,No,x,Full,Cutting 2,0.25,17/5/2022,15:00,6,-,,,,4414,72 is a small metal tube,,,,Syscal Pro,0
+PRD_MALM_2_170522,50/50 sand/peat,MA72B65Rec.txt,No,x,Full,Cutting 2,0.25,17/5/2022,17:15,6,53,,,,9382,,,,,Syscal Pro,0
+PRD_ERT_3_190522,50/50 sand/peat,ERT72.sqz,No,x,Full,Cutting 2,0.25,19/5/2022,15:38,8,-,,,,10584,72 is a small metal tube,,"before irrigation the ET speeded up drastically; 40 ml/5.55 hour. possible causes: the roots reached the zone under the outflow point (see photos) / it is not the ET but other change on the scale e.g. the plant ""climbed up"" on the horizontal rope (visually doesn't seem that this would mean so much weight)",,Syscal Pro,0
+PRD_MALM_3_190522,50/50 sand/peat,MA72B65Rec.txt,No,x,Full,Cutting 2,0.25,19/5/2022,16:46,8,61,,,,15552,,,,,Syscal Pro,0
+"partial irrigation: 19/05/2022 17:00-17:30 200 ml through the first 4 upper holes (left side), no outflow through 72",,,,,,,,,,,,,,,,,,,,,
+PRD_ERT_4_190522,50/50 sand/peat,ERT72.sqz,No,x,Full,Cutting 2,0.25,19/5/2022,18:20,7,-,,,,1,72 is a small metal tube,,,,Syscal Pro,1
+PRD_MALM_4_190522,50/50 sand/peat,MA72B65Rec.txt,No,x,Full,Cutting 2,0.25,19/5/2022,18:55,7,66,,,,4969,,,,,Syscal Pro,1
+PRD_ERT_5_230522,50/50 sand/peat,ERT72.sqz,No,x,Full,Cutting 2,0.25,23/5/2022,07:45,8, -,,,,5341,,,,,Syscal Pro,1
+PRD_MALM_5_230522,50/50 sand/peat,MA72B65Rec.txt,No,x,Full,Cutting 2,0.25,23/5/2022,08:20,8,62,,,,10309,,,,,Syscal Pro,1
+PRD_ERT_6_250522,50/50 sand/peat,ERT72.sqz,No,x,Full,Cutting 2,0.25,25/5/2022,13:30,, -,,,,,,,,,Syscal Jr,1
+"partial irrigation: 25/05/2022 14:30-14:15 260 ml through the second 4 upper holes (right side), no outflow through 72",,,,,,,,,,,,,,,,,,,,,
+PRD_ERT_7_010622,50/50 sand/peat,ERT72.sqz,No,x,Full,Cutting 2,0.25,1/6/2022,12:50,10, -,,,,1,72 is a small metal tube,,,,Syscal Jr,2
+PRD_MALM_7_010622,50/50 sand/peat,MA72B65Rec.txt,No,x,Full,Cutting 2,0.25,1/6/2022,15:20,10,64,,,,4969,,,,,Syscal Jr,2
+PRD_MALM2_7_010622,50/50 sand/peat,MA72B65Rec.txt,No,x,Full,Cutting 2,0.25,1/6/2022,15:40,10,10,,,,5341,72 in the soil next to the stem,,,,Syscal Jr,2
+partial irrigation: 01/06/2022 15:50-16:10 290 ml through the first 4 upper holes (left side),,,,,,,,,,,,,,,,,,,,,
+PRD_ERT_8_010622,50/50 sand/peat,ERT72.sqz,No,x,Full,Cutting 2,0.25,1/6/2022,16:35,5, -,,,,6483,72 is a small metal tube,,,,Syscal Jr,3
+PRD_MALM_8_010622,50/50 sand/peat,MA72B65Rec.txt,No,x,Full,Cutting 2,0.25,1/6/2022,16:15,5,63,,,,5739,,,,,Syscal Jr,3
+PRD_MALM2_8_010622,50/50 sand/peat,MA72B65Rec.txt,No,x,Full,Cutting 2,0.25,1/6/2022,16:25,5,10,,,,6111,,,,,Syscal Jr,3
+PRD_ERT_9_060622,50/50 sand/peat,ERT72.sqz,No,x,Full,Cutting 2,0.25,6/6/2022,10:15,8, -,,,,11451,72 is a small metal tube,,,,Syscal Jr,3
+PRD_MALM_9_060622,50/50 sand/peat,MA72B65Rec.txt,No,x,Full,Cutting 2,0.25,6/6/2022,12:00,8,56,,,,,,,,,Syscal Jr,3
+PRD_MALM2_9_060622,50/50 sand/peat,MA72B65Rec.txt,No,x,Full,Cutting 2,0.25,6/6/2022,12:15,8,14,,,,,,,,,Syscal Jr,3

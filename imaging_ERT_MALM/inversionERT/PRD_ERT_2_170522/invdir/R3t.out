@@ -1,0 +1,76 @@
+
+
+ >> R 3 t     E R T    M o d e l    v 2.31 <<
+
+ >> Date: 30-05-2022
+ >> My beautiful 3D survey                                                          
+ >> A d v a n c e d   M e s h   I n p u t <<
+ >> T e t r a h e d r a l   E l e m e n t   M e s h <<
+
+
+ >> Parameterisation
+    Total number of parameters:                  32557
+    Number of elements with fixed resistivity:       0
+    Number of parameter regularisation zones:        1
+    Regularisation zone   1   alpha scalar:        1.0
+ >> Reading resistivity model from res0.dat                                                                        
+
+ >> L o g - D a t a   I n v e r s i o n <<
+ >> N o r m a l   R e g u l a r i s a t i o n <<
+    For   1000 measurements the memory needed is:          0.272 Gb
+    For   2000 measurements the memory needed is:          0.532 Gb
+    For   5000 measurements the memory needed is:          1.314 Gb
+    For  10000 measurements the memory needed is:          2.617 Gb
+
+
+ >> Number of measurements read: 2476
+
+ >> Total Memory required is:          0.656 Gb
+
+
+ Processing frame   1 - output to file f001.dat
+
+   Iteration   1
+     Initial RMS Misfit:         3.70      Number of data ignored:    27
+     Alpha:          16.938   RMS Misfit:        0.23  Roughness:        2.237
+     Step length set to      1.000
+     Final RMS Misfit:        0.23
+     Data misfit:           124.38
+     Model misfit:           37.89
+     Total misfit:          162.27
+     Step length set to      0.720
+     Final RMS Misfit:        1.04
+
+ Solution converged - Outputing results to file
+
+ Calculating sensitivity map
+
+ End of data:  Terminating
+
+
+    Timing Summary
+    ==============
+    Total time taken:                                28. s
+
+    Percent time taken forming element equations:    0.1 %
+    Percent time taken solving forward  equations:   5.4 %
+    Percent time taken forming Jacobian:            13.9 %
+    Percent time taken solving inverse equations:   77.7 %
+    Percent time taken calculating res. matrix:      0.0 %
+
+    Timing Details
+    ==============
+    Number of calls to form element equations:         4
+    Average time taken in call:                      0.0 s
+    Number of calls to solve forward equations:      288
+    Average time taken in call:                      0.0 s
+    Number of calls to form Jacobian:                  1
+    Average time taken in call:                      3.8 s
+    Number of calls to solve inverse equations:        1
+    Average time taken in call:                     21.5 s
+    Number of calls to calculate res. matrix:          0
+    Average time taken in call:                      0.0 s
+
+
+ >> Program ended normally
+

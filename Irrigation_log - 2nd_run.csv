@@ -1,0 +1,6 @@
+date,start,end,type,where,outflow,quantity (mL)
+13/05/2022,,,,All,No,
+19/05/2022,17:00,17:30,PRD irr,H1;H2;H3;H4,No,200
+25/05/2022,14:30,14:55,PRD irr,H5;H6;H7;H8,No,260
+01/06/2022,15:50,16:10,PRD irr,H1;H2;H3;H4,No,290
+08/06/2022,,,,H7; H8,,

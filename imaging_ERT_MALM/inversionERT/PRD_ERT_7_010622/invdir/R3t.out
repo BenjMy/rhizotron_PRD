@@ -1,0 +1,33 @@
+
+
+ >> R 3 t     E R T    M o d e l    v 2.31 <<
+
+ >> Date: 02-06-2022
+ >> My beautiful 3D survey                                                          
+ >> A d v a n c e d   M e s h   I n p u t <<
+ >> T e t r a h e d r a l   E l e m e n t   M e s h <<
+
+
+ >> Parameterisation
+    Total number of parameters:                  32557
+    Number of elements with fixed resistivity:       0
+    Number of parameter regularisation zones:        1
+    Regularisation zone   1   alpha scalar:        1.0
+ >> Reading resistivity model from res0.dat                                                                        
+
+ >> L o g - D a t a   I n v e r s i o n <<
+ >> N o r m a l   R e g u l a r i s a t i o n <<
+    For   1000 measurements the memory needed is:          0.272 Gb
+    For   2000 measurements the memory needed is:          0.532 Gb
+    For   5000 measurements the memory needed is:          1.314 Gb
+    For  10000 measurements the memory needed is:          2.617 Gb
+
+
+ >> Number of measurements read: 2048
+
+ >> Total Memory required is:          0.545 Gb
+
+
+ Processing frame   1 - output to file f001.dat
+
+   Iteration   1
