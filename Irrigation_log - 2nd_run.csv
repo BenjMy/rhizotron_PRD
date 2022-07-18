@@ -1,6 +1,11 @@
-date,start,end,type,where,outflow,quantity (mL)
-13/05/2022,,,,All,No,
-19/05/2022,17:00,17:30,PRD irr,H1;H2;H3;H4,No,200
-25/05/2022,14:30,14:55,PRD irr,H5;H6;H7;H8,No,260
-01/06/2022,15:50,16:10,PRD irr,H1;H2;H3;H4,No,290
-08/06/2022,,,,H7; H8,,
+date,start,end,type,where,outflow,quantity (mL),PRD Cycle nb,water cond. (microS),liquid
+13/05/2022,,,,All,No,,-1,,nutrient sol
+19/05/2022,17:00,17:30,PRD irr,H1;H2;H3;H4,No,200,0,,nutrient sol
+25/05/2022,14:30,14:55,PRD irr,H5;H6;H7;H8,No,260,1,,nutrient sol
+01/06/2022,15:50,16:10,PRD irr,H1;H2;H3;H4,No,290,2,,nutrient sol
+08/06/2022,11:50,12:00,PRD irr,H7;H8,No,305,3,,tapwater
+10/06/2022,00:00,00:01,"""safety"" irr",H1-H8,No,60,4,,nutrient sol
+15/06/2022,17:25,17:45,PRD irr,H1;H2,No,350,5,,nutrient sol
+22/06/2022,16:45,16:55,PRD irr,H7;H8,No,375,6,2470,nutrient sol
+29/06/2022,13:45,13:57,PRD irr,H1;H2,No,"386,15",7,,nutrient sol
+05/07/2022,18:10,18:25,PRD irr,H7;H8,No,431,8,,nutrient sol

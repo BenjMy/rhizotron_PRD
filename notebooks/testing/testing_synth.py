@@ -22,8 +22,8 @@ imaging_path = '../../imaging_ERT_MALM/'
 # filenames_ERT = ['PRD_ERT_1_130522', 'PRD_ERT_1_170522']
 # filenames_MALM = ['PRD_MALM_1_130522', 'PRD_MALM_1_170522']
 
-filenames_ERT = ['PRD_ERT_1_130522']
-filenames_MALM = ['PRD_MALM_1_130522']
+filenames_ERT = ['PRD_ERT_test0']
+filenames_MALM = ['PRD_MALM_test0']
 # filenames_MALM = ['PRD_MALM_1_130522_only72_short_TEST']
 
 # In[2]:
@@ -56,8 +56,8 @@ k_indiv.append(k)
 # In[ ]:
 
 k_MALM = []
-# imin_S = [1]  # 0.25,-5e-3,0.25 66
-imin_S = [4,10,30]  # 0.25,-5e-3,0.25 66
+imin_S = [1]  # 0.25,-5e-3,0.25 66
+# imin_S = [4,10,30]  # 0.25,-5e-3,0.25 66
 # imin_S = [6]  # 0.25,-5e-3,0.25 66
 
 wS = list(np.ones(len(imin_S))/len(imin_S))
@@ -68,18 +68,27 @@ for i, f in enumerate(filenames_MALM):
                                       k_indiv[i],
                                       idS=imin_S,
                                       wS=wS,
-                                      reduce2d=False
+                                      reduce2d=True,
+                                      # filter_seq_rec=True,
+                                      filter_seqc=True,
+                                      nVRTe_rows=9, nVRTe_cols=9,
                                       )
     k_MALM.append(outMALM[0])
 nodes = outMALM[3]
 imin = outMALM[1]
 R_obs = outMALM[2]
 R_icsd = outMALM[4]
+R_sim = outMALM[5]
 
 plt.plot(R_obs)
-plt.plot(R_icsd[imin_S[0]])
-points = np.c_[nodes[imin_S, 0], -
-               np.ones(len(nodes[imin_S, 2]))*0.005, nodes[imin_S, 2]]
+# plt.plot(R_icsd[imin_S[0]])
+plt.plot(R_sim[imin_S[0]])
+
+# R_sim= R_sim.T
+# np.shape(R_sim[imin_S[0]])
+# plt.plot(R_icsd[10])
+# points = np.c_[nodes[imin_S, 0], -
+#                 np.ones(len(nodes[imin_S, 2]))*0.005, nodes[imin_S, 2]]
 # print(points)
 # print(nodes[imin[18]])
 print(nodes[imin[imin_S]])
@@ -122,6 +131,35 @@ print(nodes[imin[imin_S]])
 # plt.show()
 
 
+# %%
+
+sol = []
+m0 = []
+for i, f in enumerate(filenames_MALM):
+    sol.append(
+                proc.invert_MALM(imaging_path + 'inversionMALM/' + f,
+                                 wr=10,
+                                 obs_err='sqrt',
+                                 x0_ini_guess=False,
+                                 alphaSxy=False,
+                                 x0_prior=False,
+                                 method_m0='F1',
+                                 typ='2d',
+                                 fname_sim='VRTeSim_icsd.txt',
+                                 pareto=False
+                                 
+                                )
+               )
+
+    m0.append(proc.m0_MALM(imaging_path + 'inversionMALM/' + f,
+                           method_m0='F1',
+                           fname_sim='VRTeSim_icsd.txt',
+                           )
+              )
+    print(nodes[imin[imin_S]])
+    proc.plot_m0_MALM(k_MALM[i],m0[i])
+    proc.plot_MALM(k_MALM[i], sol[i],show=False,ext=['png'])
+
 
 # %%
 
@@ -131,18 +169,24 @@ for i, f in enumerate(filenames_MALM):
     sol.append(
                 proc.invert_MALM(imaging_path + 'inversionMALM/' + f,
                                  wr=1,
-                                 obs_err='const',
+                                 obs_err='sqrt',
                                  x0_ini_guess=False,
                                  alphaSxy=False,
                                  x0_prior=False,
-                                 method_m0='F1'
+                                 method_m0='F1',
+                                 typ='2d',
+                                 fname_sim='VRTeSim.txt',
                                 )
                )
+
     m0.append(proc.m0_MALM(imaging_path + 'inversionMALM/' + f,
-                           method_m0='F1'))
+                           method_m0='F1',
+                           fname_sim='VRTeSim.txt',
+                           )
+              )
     print(nodes[imin[imin_S]])
-    proc.plot_m0_MALM(k_MALM[i],nodes,imin,m0[i])
-    proc.plot_MALM(k_MALM[i], nodes, imin, sol[i])
+    proc.plot_m0_MALM(k_MALM[i],m0[i])
+    proc.plot_MALM(k_MALM[i], sol[i],show=False,ext=['png'])
 
 
 # %%
