@@ -16,52 +16,6 @@ import surveyPRD
 
 
 # surveyPRD.download_csv_scale()
-
-#%%
-
-def get_cmd():
-    parse = argparse.ArgumentParser()
-    
-    period = parse.add_argument_group('period')
-    # period.add_argument('-cycle', type=list, help='cycle to analyse', default=[4,5,6,7,8,9], required=False)
-    period.add_argument('-cycle', type=list, help='cycle to analyse', default=[7], required=False)
-    period.add_argument('-startD', type=str, help='start date to analyse', default=None, required=False)
-    period.add_argument('-endD', type=str, help='end date', default=None, required=False)
-    
-    process_param = parse.add_argument_group('process_param')
-    process_param.add_argument('-reprocessed', type=int, help='reprocessed', default=0, required=False)
-    args = parse.parse_args()
-    return(args)
-
-args = get_cmd()
-# args.cycle = [1,2]
-args.cycle = [None]
-
-#%%
-imaging_path = '../imaging_ERT_MALM/'
-
-# startD = pd.to_datetime('18/05/2022 00:00', format='%d/%m/%Y %H:%M')
-# endD = pd.to_datetime('20/05/2022 00:00', format='%d/%m/%Y %H:%M')
-
-fmt = '%d/%m/%Y,%H:%M'
-# fmt = '%Y-%m-%d %H:%M:%S'
-startD = None
-endD = None
-
-
-# startD = pd.to_datetime('01/06/2022 01:00', format='%d/%m/%Y %H:%M')
-# endD = pd.to_datetime('02/06/2023 00:00', format='%d/%m/%Y %H:%M')
-
-
-# # ALL CYCLES
-# # -----------------------------
-# startD = pd.to_datetime('13/05/2022 00:00', format=fmt)
-# endD = pd.to_datetime('02/06/2023 00:00', format=fmt)
-
-
-
-imaging_path = '../imaging_ERT_MALM/'
-
 # %%
 
 def get_cmd():
@@ -96,14 +50,38 @@ def get_cmd():
     
     args = parse.parse_args()
     return(args)
-#%%
+
 args = get_cmd()
+
+#%%
+imaging_path = '../imaging_ERT_MALM/'
+
+# startD = pd.to_datetime('18/05/2022 00:00', format='%d/%m/%Y %H:%M')
+# endD = pd.to_datetime('20/05/2022 00:00', format='%d/%m/%Y %H:%M')
+
+fmt = '%d/%m/%Y,%H:%M'
+# fmt = '%Y-%m-%d %H:%M:%S'
+startD = None
+endD = None
+
+
+# startD = pd.to_datetime('01/06/2022 01:00', format='%d/%m/%Y %H:%M')
+# endD = pd.to_datetime('02/06/2023 00:00', format='%d/%m/%Y %H:%M')
+
+
+# # ALL CYCLES
+# # -----------------------------
+# startD = pd.to_datetime('13/05/2022 00:00', format=fmt)
+# endD = pd.to_datetime('02/06/2023 00:00', format=fmt)
+
+
+#%%
 inversionPathMALM = surveyPRD.definePaths(args)
 # ERTsurvey = surveyPRD.load_ERT_survey_log()
 # d0 = ERT_log[ERT_log['Name']==selected_files_ERT[0]]['datetime'].dt.strftime(fmt)
 # dend = ERT_log[ERT_log['Name']==selected_files_ERT[-1]]['datetime'].dt.strftime(fmt) 
-args.startD = '08/06/2022,12:30'
-args.endD = '12/07/2023,12:00'
+# args.startD = '08/06/2022,12:30'
+# args.endD = '12/07/2023,12:00'
 # args.startD = '21/06/2022,12:00'
 # args.endD = '30/06/2022,12:00'
 
@@ -159,8 +137,10 @@ fig, axs = plt.subplot_mosaic(mosaic,
 # axs['a.'].set_title()
 surveyPRD.plot_timeline(ERT_log,irr_log,
                         dropMALM=True,ax=axs['a.'])
-surveyPRD.plot_PRD_effect_ER(k_indiv_merged,df_ERT,irr_log=irr_log,
+ax_ERT = surveyPRD.plot_PRD_effect_ER(k_indiv_merged,df_ERT,irr_log=irr_log,
                              unit='mS/m',ax=axs['b.'])
+# ax_ERT.set_aspect(1/6)
+
 # ax[1].set_title('Cond. variations')
 
 for label, ax in axs.items():
@@ -230,31 +210,27 @@ surveyPRD.petro_plots(scalesurvey,k_indiv_merged,df_SWC,irr_log)
 # %% ICSD analysis
 
 args.cycle=[4,5,6,7,8,9]
+# parse_dates = 
 df_MALM_icsd = pd.read_csv(imaging_path + 
                             inversionPathMALM + 
                             'df_MALM_icsd' + 
                             str([*args.cycle]) 
                             + '.csv',
-                            header=[0, 1])
+                            header=[0, 1, 2],
+                            parse_dates=True,
+                            index_col=0                            # dtype=(str,'datetime64[ns]',str)
+                            )
+
+df_MALM_icsd = df_MALM_icsd.T.reset_index()
+df_MALM_icsd['datetime'] = df_MALM_icsd['datetime'].astype('datetime64[ns]')
+df_MALM_icsd.set_index(['filename', 'datetime', 'injection'], inplace=True)
+df_MALM_icsd = df_MALM_icsd.T
+
 
 imin = np.loadtxt(imaging_path + 
                    inversionPathMALM + 
                    'vrte_nodes_in_mesh.txt'
                    )
-
-
-# for tc in zip(df_MALM_icsd.columns):
-#     print(tc)
-#     if 'LR' in tc[0]:
-#         continue
-#         if tc[0][2] is not None:
-#             print(tc[0][2])
-        
-            
-# df_MALM_icsd = pd.read_csv('df_MALM_icsd3456789'
-#                             + '.csv')
-
-# df_SWC
 
 fig, ax = plt.subplots(1,sharex=True)
 color = 'tab:red'
@@ -266,18 +242,45 @@ ax2.set_ylabel('Y2-axis', color = color)
 # fig, axs = plt.subplots(3,sharex=False)
 # ax_irr = surveyPRD.plot_timeline(ERT_log,irr_log,ax=axs[0],dropMALM=True)
 # ax_scale = surveyPRD.plot_weight_dynamic(scalesurvey,ax=ax, color='red')
+ax_SWC = surveyPRD.plot_PRD_effect_SWC(k_indiv_merged,df_SWC,irr_log=irr_log,ax=ax2,
+                                       LR=True, topdown=False,
+                                       color=['green','yellow'])
 df_MALM_icsd = surveyPRD.plot_PRD_effect_icsd(k_indiv_merged, 
                                               imin,
                                               df_MALM_icsd, irr_log,
-                                              ax=ax,
+                                              ax=ax2,
+                                              hours_interval=10,
+                                              soil=False,
+                                              color=['red','blue'])
+plt.legend(['SWC Left','SWC Right','ICSD Left','ICSD right'])
+# ax_ERT = surveyPRD.plot_PRD_effect_ER(k_indiv_merged,df_ERT,irr_log=irr_log,ax=ax2)
+# surveyPRD.petro_plots(scalesurvey,k_indiv_merged,df_SWC,irr_log,ax=ax2)
+ax.set_title('icsd VS weight data')
+plt.savefig('../figures/icsd_swc.png', dpi=400)
+
+
+#%%
+
+fig, ax = plt.subplots(1,sharex=True)
+color = 'tab:red'
+ax.set_xlabel('X-axis')
+ax.set_ylabel('Y1-axis', color = color)
+ax2 = ax.twinx()
+color = 'tab:green'
+ax2.set_ylabel('Y2-axis', color = color)     
+# fig, axs = plt.subplots(3,sharex=False)
+# ax_irr = surveyPRD.plot_timeline(ERT_log,irr_log,ax=axs[0],dropMALM=True)
+ax_scale = surveyPRD.plot_weight_dynamic(scalesurvey,ax=ax, color='red')
+df_MALM_icsd = surveyPRD.plot_PRD_effect_icsd(k_indiv_merged, 
+                                              imin,
+                                              df_MALM_icsd, irr_log,
+                                              ax=ax2,
                                               hours_interval=10)
     
-ax_ERT = surveyPRD.plot_PRD_effect_ER(k_indiv_merged,df_ERT,irr_log=irr_log,ax=ax2)
+# ax_ERT = surveyPRD.plot_PRD_effect_ER(k_indiv_merged,df_ERT,irr_log=irr_log,ax=ax2)
 # surveyPRD.petro_plots(scalesurvey,k_indiv_merged,df_SWC,irr_log,ax=ax2)
 ax.set_title('icsd VS weight data')
 plt.savefig('../figures/icsd_weight.png', dpi=400)
-
-
 
 
 

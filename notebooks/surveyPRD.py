@@ -64,6 +64,18 @@ def plot_PRD_effect_icsd(k_indiv_merged, vrte_in_mesh,
     if 'ylabel' in kwargs:
         ylabel = kwargs['ylabel']
         
+    soil = True
+    if 'soil' in kwargs:
+        soil = kwargs['soil']
+
+    color=['orange', 'green']
+    if 'color' in kwargs:
+        color = kwargs['color']
+   
+    marker='v'
+    if 'marker' in kwargs:
+        marker = kwargs['marker']
+        
         
     if ax == None:
         fig, ax = plt.subplots(figsize=(8.8, 4), constrained_layout=True)
@@ -77,21 +89,13 @@ def plot_PRD_effect_icsd(k_indiv_merged, vrte_in_mesh,
     idx_vrte_left_bool = idx_vrte_left_bool.reset_index()
     idx_vrte_left = idx_vrte_left_bool[idx_vrte_left_bool['X']].index.values
         
-    # df_MALM_icsd = df_MALM_icsd.drop(['LR'], axis=1)
-    # df_MALM_icsd[('LR',None,None)] = 'Right'
-    
     
     left_right = ['Right']*len(df_MALM_icsd)
     for idxl in idx_vrte_left:
         left_right[idxl] = 'Left'
     
     df_MALM_icsd['LR']= left_right
-    # df_MALM_icsd[('LR',None,None)] = 'Right'
 
-    # df_groups = df_MALM_icsd.groupby(['LR'],level=0).mean()
-    # df_groups.T.plot(xlabel='date', ylabel='mean Conductivity (mS/m)', ax=ax,
-    #                  linestyle='--', marker='+', color=['green', 'orange'])
-    
     tuple_cols_2_select_soil = []
     tuple_cols_2_select_stem = []
     
@@ -108,17 +112,18 @@ def plot_PRD_effect_icsd(k_indiv_merged, vrte_in_mesh,
     
     if len(left_right) == len(df_MALM_icsd):
 
-        soil_inject_df_MALM = df_MALM_icsd[tuple_cols_2_select_soil]
-        soil_inject_df_MALM['LR']= left_right
-        df_groups_soil_inj = soil_inject_df_MALM.droplevel(level=[1,2],axis=1).groupby(['LR']).sum()
-        df_groups_soil_inj.columns = df_MALM_icsd[tuple_cols_2_select_soil].columns
-
-        df_groups_soil_inj.T.droplevel(level=[0,2]).plot(xlabel='date', ylabel=ylabel, ax=ax,
-                                linestyle=':',
-                                marker='o',
-                                label='soil inj. sum curr.',
-                                color=['grey', 'grey']
-                                )
+        if soil:
+            soil_inject_df_MALM = df_MALM_icsd[tuple_cols_2_select_soil]
+            soil_inject_df_MALM['LR']= left_right
+            df_groups_soil_inj = soil_inject_df_MALM.droplevel(level=[1,2],axis=1).groupby(['LR']).sum()
+            df_groups_soil_inj.columns = df_MALM_icsd[tuple_cols_2_select_soil].columns
+    
+            df_groups_soil_inj.T.droplevel(level=[0,2]).plot(xlabel='date', ylabel=ylabel, ax=ax,
+                                    linestyle=':',
+                                    marker='o',
+                                    label='soil inj. sum curr.',
+                                    color=['grey', 'grey']
+                                    )
 
 
         stem_inject_df_MALM = df_MALM_icsd[tuple_cols_2_select_stem]
@@ -130,9 +135,9 @@ def plot_PRD_effect_icsd(k_indiv_merged, vrte_in_mesh,
 
         df_groups_stem_inj.T.droplevel(level=[0,2]).plot(xlabel='date', ylabel=ylabel, ax=ax,
                                     linestyle='--',
-                                    marker='v',
+                                    marker=marker,
                                     label='stem inj. sum curr.',
-                                    color=['orange', 'green'])
+                                    color=color)
             
     return ax
 
@@ -180,6 +185,24 @@ def plot_PRD_effect(k_indiv_merged, df, irr_log,
         LR = kwargs['LR']
     if 'topdown' in kwargs:
         topdown = kwargs['topdown']
+        
+    
+    if LR and topdown:
+        color=['limegreen', 'darkgreen','bisque', 'darkorange']
+        marker=['+']*4
+    elif LR:
+        color=['darkgreen','darkorange']
+        marker=['+']*2
+    elif topdown:
+        color=['darkgreen','darkorange']
+        marker=['+']*2
+    else:
+        color=['darkgreen']
+        marker=['+']
+    if 'color' in kwargs:
+        color = kwargs['color']
+    if 'marker' in kwargs:
+        marker = kwargs['marker']
 
             
     if ax == None:
@@ -221,18 +244,18 @@ def plot_PRD_effect(k_indiv_merged, df, irr_log,
     if LR and topdown:
         df_groups = df.groupby(['LR','TopDown']).mean()
         df_groups.T.plot(xlabel='date', ylabel=ylabel, ax=ax,
-                         linestyle='-.', marker='+', color=['limegreen', 'darkgreen','bisque', 'darkorange'])
+                         linestyle='-.', marker='+', color=color)
     elif LR:
         df_groups = df.groupby(['LR']).mean()
         df_groups.T.plot(xlabel='date', ylabel=ylabel, ax=ax,
-                         linestyle='-.', marker='+', color=['darkgreen','darkorange'])
+                         linestyle='-.', marker='+', color=color)
     elif topdown:
         df_groups = df.groupby(['TopDown']).mean()
         df_groups.T.plot(xlabel='date', ylabel=ylabel, ax=ax,
-                         linestyle='-.', marker='+', color=['darkgreen','darkorange'])
+                         linestyle='-.', marker='+', color=color)
     else:
         df.T.plot(xlabel='date', ylabel=ylabel, ax=ax,
-                         linestyle='-.', marker='+', color=['darkgreen'])
+                         linestyle='-.', marker='+', color=color)
         
         
     # plt.grid(axis='x', color='0.95')
@@ -515,7 +538,7 @@ def load_ERT_survey_log(csv2read=('/home/ben/Documents/GitHub/BenjMy/' +
                                   'PRD_Measurements_log - 2nd_run.csv'),
                         startDate=None,
                         endDate=None,
-                        cycles=[None]
+                        cycles=[-99]
                         ):
     survey_log = pd.read_csv(csv2read,
                              decimal=',',
@@ -551,7 +574,7 @@ def load_ERT_survey_log(csv2read=('/home/ben/Documents/GitHub/BenjMy/' +
 
     if type(cycles) == int:
         cycles = [cycles]
-    if cycles[0] is not None:
+    if cycles[0] != -99:
         survey_log = select_from_cycles(survey_log, cycles=cycles)
 
     return survey_log

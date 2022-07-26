@@ -32,7 +32,7 @@ def get_cmd():
     process_param.add_argument(
         '-scenario', type=str, help='Scenario', default='A', required=False)
     process_param.add_argument(
-        '-recErr', type=int, help='Rec. error', default=1e99, required=False)
+        '-recErr', type=int, help='Rec. error', default=5, required=False)
     process_param.add_argument(
         '-filter_seq', type=int, help='filter sequence', default=1, required=False)
     process_param.add_argument('-filter_seq_rec', type=int,
@@ -175,15 +175,13 @@ for f in selected_files_MALM[:]:
     imin, nodes, grid = proc.create_source_grid(mesh, k_MALM,
                                                 nVRTe_rows=9, nVRTe_cols=9,)
     
-    # text_file = open("sample.txt", "wt")
+    # text_file = open("sample2.txt", "wt")
 
     # for i, g in enumerate(grid):
     #     pt_nb = i + 81
     #     defaut_line = 'Point( {} ) = {{{}, {}, {}, cl1}}; \n'.format(pt_nb, g[0],g[1],g[2])
     #     n = text_file.write(defaut_line)
 
-
-        
     # text_file.close()
 
     # stri = ''

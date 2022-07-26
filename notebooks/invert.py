@@ -25,7 +25,7 @@ def get_cmd():
     period = parse.add_argument_group('period')
     # period.add_argument('-cycle', type=list, help='cycle to analyse', default=[None], required=False) #[0,1,2,3,4,5]
     period.add_argument('-cycle', '--cycle', nargs='+',
-                        help='list of cycle', type=int, default=[7], required=False)
+                        help='list of cycle', type=int, default=[5,6], required=False)
     # period.add_argument('-cycle', '--cycle', nargs='+',
     #                     help='list of cycle', type=int, default=[4,5,6,7,8,9], required=False)
     period.add_argument(
@@ -39,7 +39,7 @@ def get_cmd():
     process_param.add_argument(
         '-reprocessed', type=int, help='reprocessed', default=0, required=False)
     process_param.add_argument(
-        '-TL', type=int, help='TimeLapse', default=0, required=False)
+        '-TL', type=int, help='TimeLapse', default=1, required=False)
     process_param.add_argument(
         '-icsd', type=int, help='icsd proc.', default=1, required=False)
     process_param.add_argument(
@@ -83,6 +83,12 @@ def run_ERT_ind(args, selected_files_ERT, ERT_log):
                                            reprocessed=bool(args.reprocessed),
                                            recip=args.recErr,
                                            )
+    
+    # for i, ki in enumerate(k_indiv_merged):
+        # nb_of_rejected_quad[i] = ki.surveys[0]
+        # final_rms = 
+        # nb_of_iter = 
+    
     # %%
     # surveyPRD.add2pkl_ERT()
     df_ERT = surveyPRD.add2df_ERT(k_indiv_merged,
@@ -160,8 +166,7 @@ def run_TL(selected_files_ERT):
         reprocessed=bool(args.reprocessed),
         # reprocessed=True,
     )
-
-    # %%
+    
     for fi in range(len(selected_files_ERT)):
         proc.plot_ERT(k_TL[0], vmin=-10, vmax=1,
                       attr="Sensitivity_map(log10)", index=fi)
@@ -172,6 +177,63 @@ def run_TL(selected_files_ERT):
         if fi > 0:
             proc.plot_ERT(k_TL[0], vmin=-20, vmax=20,
                           attr="difference(percent)", index=fi)
+    
+    
+    k_TL = proc.invert_ERT_TL(
+        imaging_path,
+        files=selected_files_ERT,
+        regType=2,
+        recip=5,
+        idfileNames=cycle_ERT_time,
+        reprocessed=bool(args.reprocessed),
+        # reprocessed=True,
+    )
+    
+    for fi in range(len(selected_files_ERT)):
+        proc.plot_ERT(k_TL[0], vmin=-10, vmax=1,
+                      attr="Sensitivity_map(log10)", index=fi)
+        proc.plot_ERT(k_TL[0], vmin=0, vmax=2,
+                      attr="Resistivity(log10)", index=fi)
+        proc.plot_ERT(k_TL[0], vmin=0, vmax=50,
+                      attr="Resistivity(ohm.m)", index=fi)
+        if fi > 0:
+            proc.plot_ERT(k_TL[0], vmin=-20, vmax=20,
+                          attr="difference(percent)", index=fi)
+    
+    
+
+    # %%
+    # len(k_TL[0].surveys)   
+    # pl = pv.Plotter(shape=(1,len(k_TL[0].surveys)-1), window_size=[800, 400],
+    #                 notebook=True)
+    # # pl.show_bounds(font_size=10)
+    
+    # for i in range(len(k_TL[0].surveys)-1):
+    #     print(i)
+    #     pl.subplot(0,i)
+    #     mesh =  k_TL[0].mesh.df
+    #     if i > 0:
+    #         k_TL[0].showResults(
+    #                       index=i,
+    #                       attr="difference(percent)",
+    #                       ax=pl, 
+    #                       vmin=-20, vmax=20,
+    #                       color_map='jet',
+    #                       background_color='white',
+    #                       pvgrid = True,
+    #                       use_pyvista=True,
+    #                       pvshow=False,
+    #                       xlim=[mesh['X'].min(),mesh['X'].max()],
+    #                       ylim=[mesh['Y'].min(),mesh['Y'].max()], 
+    #                       zlim=[mesh['Z'].min(),mesh['Z'].max()], 
+    #                       )
+    #         # pl.x_axis.tick_size += 10
+    # pl.screenshot(imaging_path + 'foo.png')
+    # pl.show() 
+
+        # pl.save_graphic("img.svg")
+
+
 
 # %%
 
@@ -478,7 +540,14 @@ if __name__ == '__main__':
     # -----------------------------------
     args = get_cmd()
     # args.startD = '8/6/2022,9:59'
-    # args.endD = '8/6/2022,11:41'
+    # args.endD = '8/6/2022,11:41'    
+    # args.startD = '21/6/2022,13:50'
+    # args.endD = '26/6/2022,14:50'    
+    
+    # args.startD = '5/7/2022,13:50'
+    # args.endD = '9/7/2022,14:50'
+    
+    
 
     inversionPathMALM = surveyPRD.definePaths(args)
 
