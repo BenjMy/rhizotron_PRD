@@ -25,7 +25,7 @@ def get_cmd():
     period = parse.add_argument_group('period')
     # period.add_argument('-cycle', type=list, help='cycle to analyse', default=[None], required=False) #[0,1,2,3,4,5]
     period.add_argument('-cycle', '--cycle', nargs='+',
-                        help='list of cycle', type=int, default=[5,6], required=False)
+                        help='list of cycle', type=int, default=[3,4,5,6,7,8,9], required=False)
     # period.add_argument('-cycle', '--cycle', nargs='+',
     #                     help='list of cycle', type=int, default=[4,5,6,7,8,9], required=False)
     period.add_argument(
@@ -39,7 +39,7 @@ def get_cmd():
     process_param.add_argument(
         '-reprocessed', type=int, help='reprocessed', default=0, required=False)
     process_param.add_argument(
-        '-TL', type=int, help='TimeLapse', default=1, required=False)
+        '-TL', type=int, help='TimeLapse', default=0, required=False)
     process_param.add_argument(
         '-icsd', type=int, help='icsd proc.', default=1, required=False)
     process_param.add_argument(
@@ -179,26 +179,26 @@ def run_TL(selected_files_ERT):
                           attr="difference(percent)", index=fi)
     
     
-    k_TL = proc.invert_ERT_TL(
-        imaging_path,
-        files=selected_files_ERT,
-        regType=2,
-        recip=5,
-        idfileNames=cycle_ERT_time,
-        reprocessed=bool(args.reprocessed),
-        # reprocessed=True,
-    )
+    # k_TL = proc.invert_ERT_TL(
+    #     imaging_path,
+    #     files=selected_files_ERT,
+    #     regType=2,
+    #     recip=5,
+    #     idfileNames=cycle_ERT_time,
+    #     reprocessed=bool(args.reprocessed),
+    #     # reprocessed=True,
+    # )
     
-    for fi in range(len(selected_files_ERT)):
-        proc.plot_ERT(k_TL[0], vmin=-10, vmax=1,
-                      attr="Sensitivity_map(log10)", index=fi)
-        proc.plot_ERT(k_TL[0], vmin=0, vmax=2,
-                      attr="Resistivity(log10)", index=fi)
-        proc.plot_ERT(k_TL[0], vmin=0, vmax=50,
-                      attr="Resistivity(ohm.m)", index=fi)
-        if fi > 0:
-            proc.plot_ERT(k_TL[0], vmin=-20, vmax=20,
-                          attr="difference(percent)", index=fi)
+    # for fi in range(len(selected_files_ERT)):
+    #     proc.plot_ERT(k_TL[0], vmin=-10, vmax=1,
+    #                   attr="Sensitivity_map(log10)", index=fi)
+    #     proc.plot_ERT(k_TL[0], vmin=0, vmax=2,
+    #                   attr="Resistivity(log10)", index=fi)
+    #     proc.plot_ERT(k_TL[0], vmin=0, vmax=50,
+    #                   attr="Resistivity(ohm.m)", index=fi)
+    #     if fi > 0:
+    #         proc.plot_ERT(k_TL[0], vmin=-20, vmax=20,
+    #                       attr="difference(percent)", index=fi)
     
     
 
@@ -418,9 +418,12 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
         if '8returns' in f:
             continue
         # j = ind_MALM_SOIL_STEM(i,selected_files_MALM,k_indiv_merged)
-        m0.append(proc.m0_MALM(imaging_path + inversionPathMALM + f,
-                               method_m0='F1', typ=args.dim)
-                  )
+        m0i,ax,fig = proc.m0_MALM(imaging_path + inversionPathMALM + f,
+                               method_m0='F1', typ=args.dim,
+                               show=True
+                               )
+        fig.savefig(os.path.join(imaging_path,inversionPathMALM, f,'m0.png'), dpi=300)
+        m0.append(m0i)
         pl = proc.plot_m0_MALM(k_MALM[j], m0[j], pl=None, ext=['png'], show=False,
                           index=0)
         pl.close()
@@ -455,12 +458,13 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
         pareto = bool(args.pareto)
         prior = False
         # for prior in [True,False]:
-        sol_stk.append(proc.invert_MALM(imaging_path + inversionPathMALM + f,
-                                    wr=args.wr, typ=args.dim, pareto=pareto, show=False,
+        sol, ax, fig = proc.invert_MALM(imaging_path + inversionPathMALM + f,
+                                    wr=args.wr, typ=args.dim, pareto=pareto, show=True,
                                     prior = prior,
                                     # fname_sim='VRTeSim_icsd.txt'
                                     )
-                    )
+        sol_stk.append(sol)
+        fig.savefig(os.path.join(imaging_path,inversionPathMALM, f,'icsd.png'), dpi=300)
         plt.close('all')
         # proc.plot_MALM(k_MALM[i], nodes, imin, sol[i])
         if pareto:

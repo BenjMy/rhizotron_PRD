@@ -1,0 +1,39 @@
+Metadata-Version: 2.1
+Name: pyPRD
+Version: 0.0.1
+Summary: Python package for managing PRD processing, and visualization at the project level
+Home-page: https://github.com/BenjMy/pyPRD
+Author: B. Mary
+Author-email: bmary@lbl.gov
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)
+Classifier: Intended Audience :: Science/Research
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+## Python package for ERT and MALM data processing
+
+
+### Dependencies
+
+
+### Installation and testing
+
+* Install using setup.py
+* Or with pip: "pip install pyPRD" [**NOT YET DEPLOYED**]
+
+
+---
+
+### Licence ###
+This is free software: you can redistribute it and/or modify it under the terms of the BSD 3-clause License. A copy of this license is provided in LICENSE.md.
+
+### References ###
+
+
+
+

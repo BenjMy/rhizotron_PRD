@@ -2,7 +2,7 @@
 
  >> R 3 t     E R T    M o d e l    v 2.31 <<
 
- >> Date: 20-07-2022
+ >> Date: 27-07-2022
  >> My beautiful 3D survey                                                          
  >> A d v a n c e d   M e s h   I n p u t <<
  >> T e t r a h e d r a l   E l e m e n t   M e s h <<
@@ -32,3 +32,50 @@
 
    Iteration   1
      Initial RMS Misfit:        30.13      Number of data ignored:     9
+     Alpha:        1559.769   RMS Misfit:        1.51  Roughness:        1.505
+     Alpha:         723.981   RMS Misfit:        1.49  Roughness:        1.592
+     Alpha:         336.042   RMS Misfit:        1.34  Roughness:        2.716
+     Alpha:         155.977   RMS Misfit:        1.29  Roughness:        3.974
+     Alpha:          72.398   RMS Misfit:        1.27  Roughness:        6.432
+     Alpha:          33.604   RMS Misfit:        1.31  Roughness:        9.971
+     Step length set to      1.000
+     Final RMS Misfit:        1.27
+     Data misfit:          3101.75
+     Model misfit:          465.66
+     Total misfit:         3567.41
+     Attempted to update data weights and caused overshoot
+     treating as converged
+
+ Solution converged - Outputing results to file
+
+ Calculating sensitivity map
+
+ End of data:  Terminating
+
+
+    Timing Summary
+    ==============
+    Total time taken:                               186. s
+
+    Percent time taken forming element equations:    0.0 %
+    Percent time taken solving forward  equations:   2.2 %
+    Percent time taken forming Jacobian:             2.9 %
+    Percent time taken solving inverse equations:   94.2 %
+    Percent time taken calculating res. matrix:      0.0 %
+
+    Timing Details
+    ==============
+    Number of calls to form element equations:         7
+    Average time taken in call:                      0.0 s
+    Number of calls to solve forward equations:      504
+    Average time taken in call:                      0.0 s
+    Number of calls to form Jacobian:                  1
+    Average time taken in call:                      5.3 s
+    Number of calls to solve inverse equations:        6
+    Average time taken in call:                     29.3 s
+    Number of calls to calculate res. matrix:          0
+    Average time taken in call:                      0.0 s
+
+
+ >> Program ended normally
+
