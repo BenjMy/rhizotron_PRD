@@ -1,12 +1,29 @@
-# rhizotron_PRD
- Data and codes to reproduce results from  lab PRD experiment
+# rhizotron PRD
+This repo contains the data and codes to reproduce results from a laboratory PRD experiment. 
  
 ## ERT and MALM
+Basic import and processing using cmd line
 
-Package: pyPRD, from pyPRD import processing as proc
+``` {bash}
+from pyPRD import processing as proc
+import surveyPRD
+```
+
+- All cycle ERT analysis 
+``` {bash}
+python invert.py -cycle 0 1 2 3 4 5 6 7 8 9 -TL 0 -icsd 0 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5
+```
+
+-  ICSD analysis 
+``` {bash}
+python invert.py -cycle 3 4 5 6 7 8 9 -TL 0 -icsd 1 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5
+```
+
 
 ## Load cells
-
+``` {bash}
+surveyPRD.load_scale_data(args.startD,args.endD)
+```
 
 ## Data assimilation
 
