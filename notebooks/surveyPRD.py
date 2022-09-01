@@ -591,9 +591,6 @@ def indiv_invert_ERT(imaging_path, f, recip=5):
                               filename=f,
                               recip=recip
                               )
-    proc.plot_ERT(k_indiv, vmin=0, vmax=50,
-                  attr="Resistivity(ohm.m)",
-                  index=0, ext=['png', 'svg'])
     return k_indiv
 
 

@@ -23,7 +23,22 @@ License-File: LICENSE
 
 ### Installation and testing
 
+* Create a conda env
+
+- python 3.9
+
 * Install using setup.py
+
+!git clone the github pyPRD-dev repo
+python setup.py develop or install
+
++ install icsd3d
+
+for dev version:
+
+!git clone the github icsd-dev repo
+python setup.py develop or install
+
 * Or with pip: "pip install pyPRD" [**NOT YET DEPLOYED**]
 
 

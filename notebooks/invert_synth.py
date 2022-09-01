@@ -173,25 +173,38 @@ for f in selected_files_MALM[:]:
         [k_MALM, imin, _, nodes, _, _, _, _]  = outMALM
     mesh = k_MALM.mesh.df
     imin, nodes, grid = proc.create_source_grid(mesh, k_MALM,
-                                                nVRTe_rows=9, nVRTe_cols=9,)
+                                                nVRTe_rows=7, nVRTe_cols=7,)
     
-    # text_file = open("sample2.txt", "wt")
+    fig, ax = plt.subplots(1,1)
+    ax.scatter(grid[:,0],grid[:,2])
+    ax.set_xlim([0,0.47])
+    ax.set_ylim([0,0.5])
+    ax.set_xlabel('x (m)')
+    ax.set_xlabel('z (m)')
+    elecs = k_indiv_merged[0].surveys[0].elec
+    
+    ax.scatter(elecs['x'],elecs['z'])
+    plt.show()
+    
+    
+    text_file = open("vrte_positions.txt", "wt")
+    for i, g in enumerate(grid):
+        pt_nb = i + 81
+        defaut_line = 'Point( {} ) = {{{}, {}, {}, cl1}}; \n'.format(pt_nb, g[0],g[1],g[2])
+        n = text_file.write(defaut_line)
+    text_file.close()
 
-    # for i, g in enumerate(grid):
-    #     pt_nb = i + 81
-    #     defaut_line = 'Point( {} ) = {{{}, {}, {}, cl1}}; \n'.format(pt_nb, g[0],g[1],g[2])
-    #     n = text_file.write(defaut_line)
-
-    # text_file.close()
-
-    # stri = ''
-    # for i in range(90+81):
-    #     print(i)
-    #     if i==(90+72):
-    #         stri += str(i+1)
-    #     else:
-    #         stri += str(i+1) + ','
-
+    text_file2 = open("vrte_in_mesh_str.txt", "wt")
+    stri = ''
+    for i in range(len(grid)+81):
+        # if (i>90+72 & i<90+81):
+        print(i)
+        if i==(90+72):
+            stri += str(i+1)
+        else:
+            stri += str(i+1) + ','
+    n = text_file2.write(stri)
+    text_file2.close()
 
 
 

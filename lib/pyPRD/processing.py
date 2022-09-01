@@ -28,6 +28,7 @@ import pickle
 import pathlib
 from icsd3d.icsd3d_class import iCSD3d as i3d 
 
+MESH = "mesh/mesh_rhizo_resipy_vrte_v5.msh"
 
 def prepare_MALM(path, filename, k_ERT, parallel=False,
                  reduce2d=False,
@@ -551,6 +552,7 @@ def fwd_vrte(k_MALM,k_ERT,imin, rho0=None):
     if rho0:
         k_MALM.mesh.df['res0'] = rho0
     else:
+        print('use ERT inverted as initial model for Green fcts simulation')
         k_MALM.mesh.df['res0'] = k_ERT.meshResults[0].df['Resistivity(ohm.m)']
                         
     R_icsd = []
@@ -651,7 +653,7 @@ def create_MALM_project(path,filename,**kwargs):
     # print(len(k_MALM.surveys[0].df['a']))
     
     # k_MALM.importMesh(root_path + "mesh/mesh_rhizo_resipy.msh")
-    k_MALM.importMesh(root_path + "mesh/mesh_rhizo_resipy_vrte_v3.msh")
+    k_MALM.importMesh(root_path + MESH)
     
     # k_MALM.surveys[0].df[['a','b','m','n']]
     # test = k_MALM.surveys[0].df[['resist']]
@@ -700,14 +702,32 @@ def create_MALM_project(path,filename,**kwargs):
 def create_source_grid(mesh, k, nVRTe_rows=4, nVRTe_cols=4, show=False, **kwargs):
     
     
-    # dx = (1/nVRTe_rows)/2.2
-    offset = 0.0075
-    dx = (0.47-offset*2)/(nVRTe_rows-1)
-    dz = dx + 0.002
+    # define rhizo size
+    
+    # width = (490 - 10 -10)*1e-3
+    # height = (500)*1e-3
+
+    # # dx = (1/nVRTe_rows)/2.2
+    # offset = 0.0075
+    # dx = (0.47-offset*2)/(nVRTe_rows-1)
+    # dz = dx + 0.002
     
     #create a regular grid of possible sources
-    gridx, gridz = np.meshgrid(min(mesh['X'])+offset + np.arange(nVRTe_rows)*dx, 
-                                min(mesh['Z'])+offset + np.arange(nVRTe_cols)*dz
+    # gridx, gridz = np.meshgrid(min(mesh['X'])+offset + np.arange(nVRTe_rows)*dx, 
+    #                             min(mesh['Z'])+offset + np.arange(nVRTe_cols)*dz
+    #                             )
+    
+    
+    minx_elec = 0.06
+    elec_spac = 0.05
+    maxx_elec = 0.41
+    miny_elec = 0.085
+    maxy_elec = 0.487
+    offset = elec_spac/2
+    nVRTe_rows = 7
+    
+    gridx, gridz = np.meshgrid(minx_elec+offset + np.arange(nVRTe_rows)*elec_spac, 
+                               miny_elec+offset + np.arange(nVRTe_rows+1)*elec_spac
                                 )
     
     # (0.45-offset*2)/10
@@ -778,7 +798,7 @@ def set_MALM_root_seq(k):
     k.sequence = k.surveys[0].df[['a','b','m','n']]
     return k
 
-def _run_invert_ERT_TL(path, filepaths, folderName, regType=2,
+def _run_invert_ERT_TL(path, filepaths, folderName, regType=1,
                   recip=10,
                   **kwargs):
     
@@ -797,7 +817,7 @@ def _run_invert_ERT_TL(path, filepaths, folderName, regType=2,
     # k.filterElec([28])
     # k.showPseudo()
     # k.filterManual(index=0, attr="resist" # interactive plot)
-    k.importMesh(path + "mesh/mesh_rhizo_resipy_vrte_v3.msh")
+    k.importMesh(path + MESH)
     # k.showMesh()
     # k.setStartingRes(regionValues={1: 100.0}, 
     #                  zoneValues={1: 1}, 
@@ -817,7 +837,7 @@ def _run_invert_ERT_TL(path, filepaths, folderName, regType=2,
     k.param['a_wgt'] = 0.01
     k.param['b_wgt'] = recip/100
 
-    k.invert(modErr=False, parallel=False, modelDOI=False)
+    k.invert(modErr=False, parallel=True, modelDOI=False)
     k.saveProject(path + folderName + 'backup')   
     return k
 
@@ -1151,7 +1171,19 @@ def plot_ERT(k, vmin=0, vmax=300, attr="Resistivity(log10)", index=0, path='',
     if ax is None:
         ax = pv.Plotter(notebook=True,window_size=([2048, 1536])
                         )
+        # ax = pv.Plotter(notebook=True,window_size=([1024, int(1536/2)])
+        #                 )
         
+   
+    sargs = dict(height=0.05, 
+                 width=0.25,
+                 vertical=False, 
+                 position_x=0.35, 
+                 #position_y=0.015,
+                 title_font_size=45,
+                 label_font_size=45,
+                 )
+
     k.showResults(
                   index=index,
                   attr=attr,
@@ -1164,14 +1196,23 @@ def plot_ERT(k, vmin=0, vmax=300, attr="Resistivity(log10)", index=0, path='',
                   pvshow=False,
                   xlim=[mesh['X'].min(),mesh['X'].max()],
                   ylim=[mesh['Y'].min(),mesh['Y'].max()], 
-                  zlim=[mesh['Z'].min(),mesh['Z'].max()], 
+                  zlim=[mesh['Z'].min(),mesh['Z'].max()],  
+                  scalar_bar_args=sargs,
                   **kwargs)
     
     
-    ax.camera_position = 'yz'
-    ax.camera.azimuth = -75
-    ax.camera.elevation = 5
-    ax.camera.roll += 10
+    ax.camera_position = 'xz'
+    # ax.camera.azimuth = 15
+    # ax.camera.elevation = 15
+    # # ax.camera.roll += 10
+    ax.set_scale(1.1, 1.1, 1.1)
+    ax.show_bounds(grid=False, location='outer', all_edges=False, font_size=30,
+                   xlabel='X (m)',
+                   zlabel='Z (m)',
+                   show_yaxis=False,
+                   ticks='outside',
+                   use_2d=True)
+
 
 
     # pl.show_bounds(all_edges=True)
@@ -1189,7 +1230,7 @@ def plot_ERT(k, vmin=0, vmax=300, attr="Resistivity(log10)", index=0, path='',
     # pv.global_theme.font.size = 20  
     # pv.global_theme.font.label_size = 10  
     
-    ax.colorbar_orientation = 'vertical'  
+    # ax.colorbar_orientation = 'vertical'  
     # pl.SetUse2DMode(True)
     # pl.set_scale(1.1, 1.1, 1.1)
 
@@ -1200,7 +1241,7 @@ def plot_ERT(k, vmin=0, vmax=300, attr="Resistivity(log10)", index=0, path='',
     
     if 'png' in ext:
         
-        # hsize = 2000
+        hsize = 2000
         # pl.ren_win.OffScreenRenderingOn()
         # pl.enable_anti_aliasing()
         # pl.screenshot('../src/image/paper3d/mesh-types.jpg', transparent_background=True,
@@ -1209,9 +1250,10 @@ def plot_ERT(k, vmin=0, vmax=300, attr="Resistivity(log10)", index=0, path='',
         # pl.ren_win.OffScreenRenderingOff()
         # pl.ren_win.Render()
 
-        ax.screenshot(k.dirname + '/' + attr + '_t' + str(index) + ".png")
+        ax.screenshot(k.dirname + '/' + attr + '_time' + str(index) + ".png",
+                      window_size=[hsize, hsize])
     if 'svg' in ext:
-        ax.save_graphic(k.dirname + '/' + attr + '_t' + str(index) + ".svg")  
+        ax.save_graphic(k.dirname + '/' + attr + '_time' + str(index) + ".svg")  
         # pl.save_graphic(k.dirname + '/' + attr + '_t' + str(index) + ".eps")  
 
     # pl.window_size = window_size
@@ -1222,30 +1264,30 @@ def plot_ERT(k, vmin=0, vmax=300, attr="Resistivity(log10)", index=0, path='',
     # to_mpl(pl.mesh)
     
 
-    if show:
-        ax = pv.Plotter(notebook=True,window_size=([2048, 1536])
-                        )
+    # if show:
+        # ax = pv.Plotter(notebook=True,window_size=([2048, 1536])
+        #                 )
         
-    k.showResults(
-                  index=index,
-                  attr=attr,
-                  ax=ax, 
-                  vmin=vmin, vmax=vmax,
-                  color_map=color_map,
-                  background_color='white',
-                  pvgrid = True,
-                  use_pyvista=True,
-                  pvshow=False,
-                  xlim=[mesh['X'].min(),mesh['X'].max()],
-                  ylim=[mesh['Y'].min(),mesh['Y'].max()], 
-                  zlim=[mesh['Z'].min(),mesh['Z'].max()], 
-                  **kwargs)
+    # k.showResults(
+    #               index=index,
+    #               attr=attr,
+    #               ax=ax, 
+    #               vmin=vmin, vmax=vmax,
+    #               color_map=color_map,
+    #               background_color='white',
+    #               pvgrid = True,
+    #               use_pyvista=True,
+    #               pvshow=False,
+    #               xlim=[mesh['X'].min(),mesh['X'].max()],
+    #               ylim=[mesh['Y'].min(),mesh['Y'].max()], 
+    #               zlim=[mesh['Z'].min(),mesh['Z'].max()], 
+    #               **kwargs)
     
     
-    # ax.camera_position = 'yz'
-    ax.camera.azimuth = -125
-    ax.camera.elevation = -10
-    # ax.camera.roll += 10
+    # # ax.camera_position = 'yz'
+    # ax.camera.azimuth = -125
+    # ax.camera.elevation = -10
+    # # ax.camera.roll += 10
 
 
     # pl.show_bounds(all_edges=True)
@@ -1263,7 +1305,7 @@ def plot_ERT(k, vmin=0, vmax=300, attr="Resistivity(log10)", index=0, path='',
     # pv.global_theme.font.size = 20  
     # pv.global_theme.font.label_size = 10  
     
-    ax.colorbar_orientation = 'vertical'  
+    # ax.colorbar_orientation = 'vertical'  
     # pl.SetUse2DMode(True)
     # pl.set_scale(1.1, 1.1, 1.1)
 
@@ -1272,21 +1314,21 @@ def plot_ERT(k, vmin=0, vmax=300, attr="Resistivity(log10)", index=0, path='',
     
     
     
-    if 'png' in ext:
+    # if 'png' in ext:
         
-        # hsize = 2000
-        # pl.ren_win.OffScreenRenderingOn()
-        # pl.enable_anti_aliasing()
-        # pl.screenshot('../src/image/paper3d/mesh-types.jpg', transparent_background=True,
-        #               window_size=[hsize, int(hsize*pl.window_size[1]/pl.window_size[0])])
-        # pl.ren_win.SetSize([1000, 800])
-        # pl.ren_win.OffScreenRenderingOff()
-        # pl.ren_win.Render()
+    #     # hsize = 2000
+    #     # pl.ren_win.OffScreenRenderingOn()
+    #     # pl.enable_anti_aliasing()
+    #     # pl.screenshot('../src/image/paper3d/mesh-types.jpg', transparent_background=True,
+    #     #               window_size=[hsize, int(hsize*pl.window_size[1]/pl.window_size[0])])
+    #     # pl.ren_win.SetSize([1000, 800])
+    #     # pl.ren_win.OffScreenRenderingOff()
+    #     # pl.ren_win.Render()
 
-        ax.screenshot(k.dirname + '/' + attr + '_t' + str(index) + ".png")
-    if 'svg' in ext:
-        ax.save_graphic(k.dirname + '/' + attr + '_t' + str(index) + ".svg")  
-        # pl.save_graphic(k.dirname + '/' + attr + '_t' + str(index) + ".eps")  
+    #     ax.screenshot(k.dirname + '/' + attr + '_t' + str(index) + ".png")
+    # if 'svg' in ext:
+    #     ax.save_graphic(k.dirname + '/' + attr + '_t' + str(index) + ".svg")  
+    #     # pl.save_graphic(k.dirname + '/' + attr + '_t' + str(index) + ".eps")  
 
     # pl.window_size = window_size
     
@@ -1296,10 +1338,10 @@ def plot_ERT(k, vmin=0, vmax=300, attr="Resistivity(log10)", index=0, path='',
     # to_mpl(pl.mesh)
     
 
-    if show:
-        ax.show()
-    else:
-        return ax
+    # if show:
+    #     # ax.show()
+    # else:
+    return ax
 
 def invert_ERT(path='.',
                filename='',
@@ -1323,7 +1365,7 @@ def invert_ERT(path='.',
     # k.filterElec([28])
     # k.filterManual(index=0, attr="resist" # interactive plot)
     # k.importMesh(path + "mesh/mesh_rhizo_resipy.msh")
-    k.importMesh(path + "mesh/mesh_rhizo_resipy_vrte_v3.msh")
+    k.importMesh(path + MESH)
     # k.createMesh()
     # k.showMesh()
     k.setStartingRes(regionValues={1: 100.0}, 

@@ -84,6 +84,12 @@ def run_ERT_ind(args, selected_files_ERT, ERT_log):
                                            recip=args.recErr,
                                            )
     
+    for fi in range(len(selected_files_ERT)):
+        proc.plot_ERT(k_indiv_merged[fi], vmin=0, vmax=2,
+                      attr="Resistivity(log10)")
+        proc.plot_ERT(k_indiv_merged[fi], vmin=0, vmax=50,
+                      attr="Resistivity(ohm.m)")
+    
     # for i, ki in enumerate(k_indiv_merged):
         # nb_of_rejected_quad[i] = ki.surveys[0]
         # final_rms = 
@@ -168,8 +174,8 @@ def run_TL(selected_files_ERT):
     )
     
     for fi in range(len(selected_files_ERT)):
-        proc.plot_ERT(k_TL[0], vmin=-10, vmax=1,
-                      attr="Sensitivity_map(log10)", index=fi)
+        # proc.plot_ERT(k_TL[0], vmin=-10, vmax=1,
+        #               attr="Sensitivity_map(log10)", index=fi)
         proc.plot_ERT(k_TL[0], vmin=0, vmax=2,
                       attr="Resistivity(log10)", index=fi)
         proc.plot_ERT(k_TL[0], vmin=0, vmax=50,
@@ -240,7 +246,7 @@ def run_TL(selected_files_ERT):
 
 def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
              inversionPathMALM):
-
+    ''' Plot the observed data '''
     
     k_MALM = []
     f_MALM = []

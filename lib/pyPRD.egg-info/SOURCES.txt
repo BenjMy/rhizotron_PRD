@@ -4,6 +4,7 @@ pyproject.toml
 setup.py
 pyPRD/__init__.py
 pyPRD/processing.py
+pyPRD/utils_mesh.py
 pyPRD.egg-info/PKG-INFO
 pyPRD.egg-info/SOURCES.txt
 pyPRD.egg-info/dependency_links.txt

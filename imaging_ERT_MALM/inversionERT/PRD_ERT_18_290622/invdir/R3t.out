@@ -2,14 +2,14 @@
 
  >> R 3 t     E R T    M o d e l    v 2.31 <<
 
- >> Date: 20-07-2022
+ >> Date: 01-09-2022
  >> My beautiful 3D survey                                                          
  >> A d v a n c e d   M e s h   I n p u t <<
  >> T e t r a h e d r a l   E l e m e n t   M e s h <<
 
 
  >> Parameterisation
-    Total number of parameters:                  38427
+    Total number of parameters:                  33226
     Number of elements with fixed resistivity:       0
     Number of parameter regularisation zones:        1
     Regularisation zone   1   alpha scalar:        1.0
@@ -17,51 +17,34 @@
 
  >> L o g - D a t a   I n v e r s i o n <<
  >> N o r m a l   R e g u l a r i s a t i o n <<
-    For   1000 measurements the memory needed is:          0.320 Gb
-    For   2000 measurements the memory needed is:          0.628 Gb
-    For   5000 measurements the memory needed is:          1.551 Gb
-    For  10000 measurements the memory needed is:          3.088 Gb
+    For   1000 measurements the memory needed is:          0.277 Gb
+    For   2000 measurements the memory needed is:          0.543 Gb
+    For   5000 measurements the memory needed is:          1.341 Gb
+    For  10000 measurements the memory needed is:          2.671 Gb
 
 
  >> Number of measurements read: 2075
 
- >> Total Memory required is:          0.651 Gb
+ >> Total Memory required is:          0.563 Gb
 
 
  Processing frame   1 - output to file f001.dat
 
    Iteration   1
-     Initial RMS Misfit:        24.21      Number of data ignored:    21
-     Alpha:       27874.883   RMS Misfit:        2.77  Roughness:        0.163
-     Alpha:       12938.375   RMS Misfit:        2.73  Roughness:        0.183
-     Alpha:        6005.462   RMS Misfit:        2.31  Roughness:        0.469
-     Alpha:        2787.488   RMS Misfit:        2.06  Roughness:        0.813
-     Alpha:        1293.837   RMS Misfit:        1.80  Roughness:        1.511
-     Alpha:         600.546   RMS Misfit:        1.83  Roughness:        2.541
+     Initial RMS Misfit:        24.21      Number of data ignored:    19
+     Alpha:        6400.145   RMS Misfit:        2.28  Roughness:        0.636
+     Alpha:        2970.684   RMS Misfit:        2.24  Roughness:        0.693
+     Alpha:        1378.869   RMS Misfit:        1.92  Roughness:        1.484
+     Alpha:         640.015   RMS Misfit:        1.83  Roughness:        2.355
+     Alpha:         297.068   RMS Misfit:        1.58  Roughness:        3.856
+     Alpha:         137.887   RMS Misfit:        1.51  Roughness:        5.747
+     Alpha:          64.001   RMS Misfit:        1.50  Roughness:        8.193
+     Alpha:          29.707   RMS Misfit:        1.53  Roughness:       11.256
      Step length set to      1.000
-     Final RMS Misfit:        1.80
-     Data misfit:          6627.01
-     Model misfit:         1954.96
-     Total misfit:         8581.97
-     Updated data weights
-
-   Iteration   2
-     Initial RMS Misfit:         2.89      Number of data ignored:    10
-     Alpha:         772.029   RMS Misfit:        1.72  Roughness:        2.156
-     Alpha:         358.344   RMS Misfit:        1.65  Roughness:        3.096
-     Alpha:         166.329   RMS Misfit:        1.57  Roughness:        4.267
-     Alpha:          77.203   RMS Misfit:        1.50  Roughness:        5.916
-     Alpha:          35.834   RMS Misfit:        1.45  Roughness:        7.910
-     Alpha:          16.633   RMS Misfit:        1.41  Roughness:       10.412
-     Alpha:           7.720   RMS Misfit:        1.37  Roughness:       13.557
-     Alpha:           3.583   RMS Misfit:        1.35  Roughness:       17.999
-     Alpha:           1.663   RMS Misfit:        1.34  Roughness:       24.952
-     Alpha:           0.772   RMS Misfit:        1.32  Roughness:       35.179
-     Step length set to      1.000
-     Final RMS Misfit:        1.32
-     Data misfit:          3574.71
-     Model misfit:           27.16
-     Total misfit:         3601.86
+     Final RMS Misfit:        1.50
+     Data misfit:          4646.68
+     Model misfit:          524.36
+     Total misfit:         5171.04
      Attempted to update data weights and caused overshoot
      treating as converged
 
@@ -74,24 +57,24 @@
 
     Timing Summary
     ==============
-    Total time taken:                               521. s
+    Total time taken:                               357. s
 
     Percent time taken forming element equations:    0.0 %
-    Percent time taken solving forward  equations:   1.6 %
-    Percent time taken forming Jacobian:             1.7 %
-    Percent time taken solving inverse equations:   96.4 %
+    Percent time taken solving forward  equations:   1.5 %
+    Percent time taken forming Jacobian:             1.5 %
+    Percent time taken solving inverse equations:   96.6 %
     Percent time taken calculating res. matrix:      0.0 %
 
     Timing Details
     ==============
-    Number of calls to form element equations:        17
+    Number of calls to form element equations:         9
     Average time taken in call:                      0.0 s
-    Number of calls to solve forward equations:     1224
+    Number of calls to solve forward equations:      648
     Average time taken in call:                      0.0 s
-    Number of calls to form Jacobian:                  2
-    Average time taken in call:                      4.4 s
-    Number of calls to solve inverse equations:       16
-    Average time taken in call:                     31.4 s
+    Number of calls to form Jacobian:                  1
+    Average time taken in call:                      5.2 s
+    Number of calls to solve inverse equations:        8
+    Average time taken in call:                     43.0 s
     Number of calls to calculate res. matrix:          0
     Average time taken in call:                      0.0 s
 

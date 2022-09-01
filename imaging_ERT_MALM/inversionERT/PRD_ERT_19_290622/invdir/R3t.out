@@ -2,14 +2,14 @@
 
  >> R 3 t     E R T    M o d e l    v 2.31 <<
 
- >> Date: 20-07-2022
+ >> Date: 01-09-2022
  >> My beautiful 3D survey                                                          
  >> A d v a n c e d   M e s h   I n p u t <<
  >> T e t r a h e d r a l   E l e m e n t   M e s h <<
 
 
  >> Parameterisation
-    Total number of parameters:                  38427
+    Total number of parameters:                  33226
     Number of elements with fixed resistivity:       0
     Number of parameter regularisation zones:        1
     Regularisation zone   1   alpha scalar:        1.0
@@ -17,30 +17,31 @@
 
  >> L o g - D a t a   I n v e r s i o n <<
  >> N o r m a l   R e g u l a r i s a t i o n <<
-    For   1000 measurements the memory needed is:          0.320 Gb
-    For   2000 measurements the memory needed is:          0.628 Gb
-    For   5000 measurements the memory needed is:          1.551 Gb
-    For  10000 measurements the memory needed is:          3.088 Gb
+    For   1000 measurements the memory needed is:          0.277 Gb
+    For   2000 measurements the memory needed is:          0.543 Gb
+    For   5000 measurements the memory needed is:          1.341 Gb
+    For  10000 measurements the memory needed is:          2.671 Gb
 
 
  >> Number of measurements read: 2027
 
- >> Total Memory required is:          0.636 Gb
+ >> Total Memory required is:          0.550 Gb
 
 
  Processing frame   1 - output to file f001.dat
 
    Iteration   1
-     Initial RMS Misfit:        30.15      Number of data ignored:     8
-     Alpha:        1603.764   RMS Misfit:        1.66  Roughness:        2.304
-     Alpha:         744.401   RMS Misfit:        1.64  Roughness:        2.463
-     Alpha:         345.520   RMS Misfit:        1.56  Roughness:        4.483
-     Alpha:         160.376   RMS Misfit:        1.75  Roughness:        6.505
+     Initial RMS Misfit:        30.16      Number of data ignored:     6
+     Alpha:        5284.891   RMS Misfit:        2.22  Roughness:        1.046
+     Alpha:        2453.029   RMS Misfit:        2.17  Roughness:        1.123
+     Alpha:        1138.595   RMS Misfit:        1.82  Roughness:        2.162
+     Alpha:         528.489   RMS Misfit:        1.70  Roughness:        3.276
+     Alpha:         245.303   RMS Misfit:        1.74  Roughness:        5.183
      Step length set to      1.000
-     Final RMS Misfit:        1.56
-     Data misfit:          4934.35
-     Model misfit:         1548.90
-     Total misfit:         6483.25
+     Final RMS Misfit:        1.70
+     Data misfit:          5844.02
+     Model misfit:         1731.47
+     Total misfit:         7575.49
      Attempted to update data weights and caused overshoot
      treating as converged
 
@@ -53,24 +54,24 @@
 
     Timing Summary
     ==============
-    Total time taken:                                99. s
+    Total time taken:                               197. s
 
     Percent time taken forming element equations:    0.0 %
-    Percent time taken solving forward  equations:   2.4 %
-    Percent time taken forming Jacobian:             4.3 %
-    Percent time taken solving inverse equations:   92.4 %
+    Percent time taken solving forward  equations:   1.8 %
+    Percent time taken forming Jacobian:             3.0 %
+    Percent time taken solving inverse equations:   94.5 %
     Percent time taken calculating res. matrix:      0.0 %
 
     Timing Details
     ==============
-    Number of calls to form element equations:         5
+    Number of calls to form element equations:         6
     Average time taken in call:                      0.0 s
-    Number of calls to solve forward equations:      360
+    Number of calls to solve forward equations:      432
     Average time taken in call:                      0.0 s
     Number of calls to form Jacobian:                  1
-    Average time taken in call:                      4.3 s
-    Number of calls to solve inverse equations:        4
-    Average time taken in call:                     22.8 s
+    Average time taken in call:                      6.0 s
+    Number of calls to solve inverse equations:        5
+    Average time taken in call:                     37.3 s
     Number of calls to calculate res. matrix:          0
     Average time taken in call:                      0.0 s
 
