@@ -26,6 +26,7 @@ def get_cmd():
     # period.add_argument('-cycle', type=list, help='cycle to analyse', default=[None], required=False) #[0,1,2,3,4,5]
     period.add_argument('-cycle', '--cycle', nargs='+',
                         help='list of cycle', type=int, default=[3,4,5,6,7,8,9], required=False)
+                        # help='list of cycle', type=int, default=[7], required=False)
     # period.add_argument('-cycle', '--cycle', nargs='+',
     #                     help='list of cycle', type=int, default=[4,5,6,7,8,9], required=False)
     period.add_argument(
@@ -41,6 +42,8 @@ def get_cmd():
     process_param.add_argument(
         '-TL', type=int, help='TimeLapse', default=0, required=False)
     process_param.add_argument(
+        '-TLreg', type=int, help='TimeLapse reg mode', default=1, required=False)
+    process_param.add_argument(
         '-icsd', type=int, help='icsd proc.', default=1, required=False)
     process_param.add_argument(
         '-dim', type=str, help='icsd dim.', default='2d', required=False)
@@ -53,10 +56,13 @@ def get_cmd():
     process_param.add_argument('-pareto', type=int,
                                help='pareto', default=0, required=False)
     process_param.add_argument('-wr', type=float,
-                               help='reg. weight', default=1, required=False)
+                               help='reg. weight', default=10, required=False)
     args = parse.parse_args()
+    
+    
+    # args.startD = '29/6/2022,14:14'
+    # args.endD = '29/6/2022,15:03'
     return(args)
-
 
 # %%
 # print(args)
@@ -68,6 +74,7 @@ ax = surveyPRD.plot_timeline(ERT_log_all, irr_log_all, dropMALM=True)
 # ax.get_xaxis().set_major_locator(mdates.DayLocator(interval=5))
 # ax.get_xaxis().set_major_formatter(mdates.DateFormatter("%d/%m - %Hh"))
 
+print(ERT_log_all)
 
 # %%
 # ERT_log['PRD Cycle nb']
@@ -100,6 +107,22 @@ def run_ERT_ind(args, selected_files_ERT, ERT_log):
     df_ERT = surveyPRD.add2df_ERT(k_indiv_merged,
                                   selected_files_ERT,
                                   ERT_log)
+    
+    
+    df_rms = proc.getR3out(imaging_path,
+                  selected_files_ERT,
+                  )
+    
+    df_rms.to_csv(imaging_path+'inversionERT/RMS' + str([*args.cycle])+'.csv')
+    # Plot evolution RMS
+    # ---------------------------------------------------------------
+    
+    
+    # Plot nb of rejected points
+    # ---------------------------------------------------------------
+    
+    
+    
     
     # surveyPRD.df_ERT_diff(df_ERT,selected_files_ERT,
     #                 background_diff=False)
@@ -166,10 +189,10 @@ def run_TL(selected_files_ERT):
     k_TL = proc.invert_ERT_TL(
         imaging_path,
         files=selected_files_ERT,
-        regType=1,
+        regType=args.TLreg,
         recip=5,
         idfileNames=cycle_ERT_time,
-        reprocessed=bool(args.reprocessed),
+        reprocessed=True #bool(args.reprocessed),
         # reprocessed=True,
     )
     
@@ -179,10 +202,12 @@ def run_TL(selected_files_ERT):
         proc.plot_ERT(k_TL[0], vmin=0, vmax=2,
                       attr="Resistivity(log10)", index=fi)
         proc.plot_ERT(k_TL[0], vmin=0, vmax=50,
-                      attr="Resistivity(ohm.m)", index=fi)
+                      attr="Resistivity(ohm.m)", index=fi,
+                      )
         if fi > 0:
             proc.plot_ERT(k_TL[0], vmin=-20, vmax=20,
-                          attr="difference(percent)", index=fi)
+                          attr="difference(percent)", index=fi,
+                          showElec=False)
     
     
     # k_TL = proc.invert_ERT_TL(
@@ -313,7 +338,7 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
                            df_MALM,
                            k_indiv_merged,
                            ERT_log,
-                           vmin=-125, vmax=550,
+                           vmin=-625, vmax=125,
                            )
     plt.close('all')
 
@@ -377,7 +402,7 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
                                             k_indiv_merged,
                                             f_MALM,
                                             ERT_log,
-                                            vmin=25, vmax=1e4,
+                                            vmin=25, vmax=150,
                                             )
     plt.close('all')
 
@@ -402,9 +427,9 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
         outMALM = proc.prepare_icsd(imaging_path + inversionPathMALM,
                                         f,
                                         k_indiv_merged[index_ERT_backgrd],
-                                        reprocessed=bool(args.reprocessed),
-                                        # reprocessed=True,
-                                        nVRTe_rows=9, nVRTe_cols=9,
+                                        # reprocessed=bool(args.reprocessed),
+                                        reprocessed=True,
+                                        nVRTe_cols=6*2+1, nVRTe_rows=4*2+1,
                                         filter_seq_rec=args.filter_seq_rec,
                                         filter_seq=args.filter_seq,
                                         reduce2d=True,
@@ -414,6 +439,8 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
     [_, imin, R_obs, nodes, R_icsd] = outMALM
     plt.close('all')
 
+    # plt.plot(R_obs)
+    # plt.plot(R_icsd[:,0])
 
     # %%
 
@@ -465,7 +492,7 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
         prior = False
         # for prior in [True,False]:
         sol, ax, fig = proc.invert_MALM(imaging_path + inversionPathMALM + f,
-                                    wr=args.wr, typ=args.dim, pareto=pareto, show=True,
+                                    wr=args.wr, typ=args.dim, pareto=pareto, show=False,
                                     prior = prior,
                                     # fname_sim='VRTeSim_icsd.txt'
                                     )

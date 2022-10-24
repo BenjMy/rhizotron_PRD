@@ -36,6 +36,9 @@ def load_log_files(args):
     selected_files_MALM = ERT_log[ERT_log['method']
                                   == 'MALM']['Name'].to_list()
 
+    # selected_files_MALM = ERT_log[ERT_log['method']
+    #                               == 'MALM2']['Name'].to_list()
+
     # %%
     ax = plot_timeline(ERT_log, irr_log, dropMALM=True)
     tdelta = (ERT_log['datetime'].iloc[0]-ERT_log['datetime'].iloc[-1])/10

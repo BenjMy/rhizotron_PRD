@@ -28,7 +28,7 @@ import pickle
 import pathlib
 from icsd3d.icsd3d_class import iCSD3d as i3d 
 
-MESH = "mesh/mesh_rhizo_resipy_vrte_v5.msh"
+MESH = "mesh/mesh_rhizo_resipy_vrte_v7.msh"
 
 def prepare_MALM(path, filename, k_ERT, parallel=False,
                  reduce2d=False,
@@ -231,10 +231,11 @@ def prepare_MALM_synth(path, filename, k_ERT, idS=[10], parallel=False,
         else:
             k_MALM.mesh.df['res0'] = k_ERT.meshResults[0].df['Resistivity(ohm.m)']
     
-    
+
         # adding multiple_sources
         def multiple_sources(k,idS=[],wS=None):
             seqMALM =  k.surveys[0].df[['a','b','m','n']]
+            k.param['node_elec']
             RobsSi = np.zeros((seqMALM.shape[0], len(idS)))
             if len(idS)>0:
                 for i, s in enumerate(idS):
@@ -242,6 +243,7 @@ def prepare_MALM_synth(path, filename, k_ERT, idS=[10], parallel=False,
                     # k.param['node_elec'][1][int(seqMALM['a'][i])-1] = imin[s] # the source to be found (CHANGE HERE)
                     # k.param['node_elec'][1][71] = s # the source to be found (CHANGE HERE)
                     # k.mesh['res0']
+                    k.surveys[0].df[['a','b','m','n']]
                     k.forward()
                     RobsSi[:,i] = k.surveys[0].df['resist'].values
                     # RobsSi[:,i] = 100
@@ -263,6 +265,8 @@ def prepare_MALM_synth(path, filename, k_ERT, idS=[10], parallel=False,
         if 'idS' in kwargs:
             idS = kwargs['idS']
         
+        k_MALM.param['node_elec']
+
         # len(k_MALM.sequence)
         R_obs = multiple_sources(k_MALM,idS,wS)
         # addnoise = np.vectorize(addnoise)
@@ -273,6 +277,7 @@ def prepare_MALM_synth(path, filename, k_ERT, idS=[10], parallel=False,
         else:
             R_icsd, R_sim = fwd_vrte(k_MALM, k_ERT, imin, rho0)
         
+
 
         if reduce2d:
             export4icsd(path + filename,
@@ -494,11 +499,11 @@ def export4icsd(path,R_sim,R_obs,imin,nodes,reduce2d=False):
         np.savetxt(path  + '/VRTeCoord.txt', 
                     # nodes[:,[0,2]],  
                     np.c_[nodes[imin,0],nodes[imin,2]],  
-                    delimiter='\t', fmt='%0.2f')  
+                    delimiter='\t', fmt='%0.4f')  
     else:
         np.savetxt(path  + '/VRTeCoord.txt', 
                     np.c_[nodes[imin,0],nodes[imin,2],nodes[imin,1]],  
-                    delimiter='\t', fmt='%0.2f')  
+                    delimiter='\t', fmt='%0.4f')  
 
 
 
@@ -554,15 +559,33 @@ def fwd_vrte(k_MALM,k_ERT,imin, rho0=None):
     else:
         print('use ERT inverted as initial model for Green fcts simulation')
         k_MALM.mesh.df['res0'] = k_ERT.meshResults[0].df['Resistivity(ohm.m)']
+        # k_MALM.mesh.df['res0'] = 100
                         
     R_icsd = []
+    
+    # k_MALM.mesh.node[imin]
+    # nodes = k_MALM.mesh.node
+
+    k_ERT.param['node_elec']    
+    k_MALM.param['node_elec']    
+    # k_MALM.mesh.node[80]
+    # k_MALM.param['node_elec'][0] = k_ERT.param['node_elec'][0] 
+
+    # k_MALM.param['node_elec'][1] = k_MALM.param['node_elec'][1]-1
+
+    # d = 80
     for i, d in enumerate(imin):
+        # print(d)
         # with io.capture_output() as captured:
         print('\n=====', i, '++++', len(imin))
         # k.param['node_elec'][1][1] = imin[s] # the source to be found (CHANGE HERE)
-        # k_MALM.surveys[0].df[['a','b','m','n']]
+        k_MALM.surveys[0].df[['a','b','m','n']]
         k_MALM.param['node_elec'][1][71] = d
+        # k_MALM.mesh.node[k_MALM.param['node_elec'][1]-1]
+        k_MALM.mesh.node[k_MALM.param['node_elec'][1][71]]
         k_MALM.forward()
+        # plt.plot(k_MALM.surveys[0].df['resist'].values)
+        # plt.show()
         Rsim[:,i] = k_MALM.surveys[0].df['resist'].values
         # plt.plot(Rsim[:,i])
         R_icsd.append(k_MALM.surveys[0].df['resist'].values)
@@ -646,15 +669,40 @@ def create_MALM_project(path,filename,**kwargs):
     # if k_MALM.surveys[0].df['a'].all() == '71':
     #     k_MALM.surveys[0].df['a'] = k_MALM.surveys[0].df['a'].replace('71','72')
 
-            
+    k_MALM.importElec(root_path + "mesh/elecsXYZ.csv")
     
     # k_MALM.sequence
-    k_MALM.importElec(root_path + "mesh/elecsXYZ.csv")
+    # k_MALM.elec
     # print(len(k_MALM.surveys[0].df['a']))
     
     # k_MALM.importMesh(root_path + "mesh/mesh_rhizo_resipy.msh")
-    k_MALM.importMesh(root_path + MESH)
+    k_MALM.importMesh(root_path + MESH,
+                        # elec=k_MALM.elec[['x','y','z']].to_numpy(),
+                        # node_pos=np.arange(72)
+                      )
     
+    # k_MALM.importElec(root_path + "mesh/elecsXYZ.csv")
+
+    nodes = k_MALM.mesh.node
+    
+    k_MALM.elec
+    # dist = cdist(grid, nodes[:])
+    # imin = np.argmin(dist, axis=1)
+
+    
+    # newnode_elec = []  
+    # for i in k_MALM.param['node_elec'][0]:
+    #     newnode_elec.append(str(int(i)-1))
+    
+    
+    # k_MALM.param['node_elec'][0] =  np.array(newnode_elec)
+    # k_MALM.param['node_elec'][1] =  k_MALM.param['node_elec'][1] - 1
+
+
+    # elecsMALM_nodes = k_MALM.param['node_elec'][1]
+    # nodes[71]
+    
+    # len(nodes[elecsMALM_nodes])
     # k_MALM.surveys[0].df[['a','b','m','n']]
     # test = k_MALM.surveys[0].df[['resist']]
 
@@ -699,7 +747,7 @@ def create_MALM_project(path,filename,**kwargs):
     return k_MALM, Robs
 
 
-def create_source_grid(mesh, k, nVRTe_rows=4, nVRTe_cols=4, show=False, **kwargs):
+def create_source_grid(mesh, k, nVRTe_rows=5, nVRTe_cols=4, show=False, **kwargs):
     
     
     # define rhizo size
@@ -718,16 +766,32 @@ def create_source_grid(mesh, k, nVRTe_rows=4, nVRTe_cols=4, show=False, **kwargs
     #                             )
     
     
-    minx_elec = 0.06
+    # minx_elec = 0.06
+    # elec_spac = 0.05
+    # maxx_elec = 0.41
+    # miny_elec = 0.085
+    # maxy_elec = 0.487
+    # offset = elec_spac/2
+    # nVRTe_rows = 7
+    
+    # gridx, gridz = np.meshgrid(minx_elec+offset + np.arange(nVRTe_rows)*elec_spac, 
+    #                            miny_elec+offset + np.arange(nVRTe_rows+1)*elec_spac
+    #                             )
+    
+    
+    # minx_elec = 0.06
     elec_spac = 0.05
-    maxx_elec = 0.41
+    # maxx_elec = 0.41
     miny_elec = 0.085
     maxy_elec = 0.487
     offset = elec_spac/2
-    nVRTe_rows = 7
+    # nVRTe_rows = 7
+    eps=1e-4
     
-    gridx, gridz = np.meshgrid(minx_elec+offset + np.arange(nVRTe_rows)*elec_spac, 
-                               miny_elec+offset + np.arange(nVRTe_rows+1)*elec_spac
+    gridx, gridz = np.meshgrid(
+                                np.linspace(0+eps,47*1e-2-eps,nVRTe_cols), 
+                                np.linspace(0+eps,50*1e-2-eps,nVRTe_rows), 
+                               # np.arange(nVRTe_cols)*elec_spac*2 + offset
                                 )
     
     # (0.45-offset*2)/10
@@ -754,10 +818,14 @@ def create_source_grid(mesh, k, nVRTe_rows=4, nVRTe_cols=4, show=False, **kwargs
     dist = cdist(grid, nodes[:])
     imin = np.argmin(dist, axis=1)
 
+
+    elecsMALM_nodes = k.param['node_elec'][1]
+    k.elec 
+        
     fig = plt.figure()
     ax = fig.add_subplot()
-    # ax.scatter(nodes[imin,0],nodes[imin,2])
-    ax.scatter(gridx,gridz)
+    ax.scatter(nodes[imin,0],nodes[imin,2])
+    # ax.scatter(gridx,gridz)
     ax.set_xlim([0,0.47])
     ax.set_ylim([0,0.5])
     
@@ -765,16 +833,39 @@ def create_source_grid(mesh, k, nVRTe_rows=4, nVRTe_cols=4, show=False, **kwargs
     # min(gridx)
     # len(imin)
     # check that nodes does not belong to electrodes nodes
-    # elecsMALM = k.surveys[0].elec
-    elecsMALM_nodes = k.param['node_elec'][1]
+    elecsMALM = k.surveys[0].elec
+    # plt.scatter(nodes[elecsMALM_nodes,0],
+    #             nodes[elecsMALM_nodes,2])
+    # plt.scatter(elecsMALM['x'],elecsMALM['z'])    
+    
+    
     interection_danger = np.intersect1d(elecsMALM_nodes,imin)
     
     if len(interection_danger)>1:
-        raise ValueError('Intersection not null')
+        # raise ValueError('Intersection not null')
+        print('ValueError Intersection not null')
         
     # def check_VRTenodesVS_elecsnode(nodes,imin,elecsMALM):
         
-        
+    text_file = open("vrte_positions.txt", "wt")
+    for i, g in enumerate(grid):
+        pt_nb = i + 81
+        defaut_line = 'Point( {} ) = {{{}, {}, {}, cl1}}; \n'.format(pt_nb, g[0],g[1],g[2])
+        n = text_file.write(defaut_line)
+    text_file.close()
+
+    text_file2 = open("vrte_in_mesh_str.txt", "wt")
+    stri = ''
+    for i in range(len(grid)+81):
+        # if (i>90+72 & i<90+81):
+        print(i)
+        if i==(90+72):
+            stri += str(i+1)
+        else:
+            stri += str(i+1) + ','
+    n = text_file2.write(stri)
+    text_file2.close()
+
         
         
     # fig = plt.figure()
@@ -837,7 +928,7 @@ def _run_invert_ERT_TL(path, filepaths, folderName, regType=1,
     k.param['a_wgt'] = 0.01
     k.param['b_wgt'] = recip/100
 
-    k.invert(modErr=False, parallel=True, modelDOI=False)
+    k.invert(modErr=False, parallel=False, modelDOI=False)
     k.saveProject(path + folderName + 'backup')   
     return k
 
@@ -1153,7 +1244,7 @@ def to_mpl(mesh):
 
 def plot_ERT(k, vmin=0, vmax=300, attr="Resistivity(log10)", index=0, path='',
              ext='.png', ax=None,
-             show=True,
+             show=True, showElec=True,
              **kwargs):
     '''
     '''
@@ -1201,7 +1292,7 @@ def plot_ERT(k, vmin=0, vmax=300, attr="Resistivity(log10)", index=0, path='',
                   **kwargs)
     
     
-    ax.camera_position = 'xz'
+    # ax.camera_position = 'xz'
     # ax.camera.azimuth = 15
     # ax.camera.elevation = 15
     # # ax.camera.roll += 10
@@ -1216,7 +1307,11 @@ def plot_ERT(k, vmin=0, vmax=300, attr="Resistivity(log10)", index=0, path='',
 
 
     # pl.show_bounds(all_edges=True)
-    # pl.view_xz(negative=True)
+    if showElec:
+        ax.view_xz(negative=True)
+    else:
+        ax.view_xz()
+    
     # pl.scalar_bars
     # pl.view_xz()
     #actor = pl.show_grid()
@@ -1386,3 +1481,65 @@ def invert_ERT(path='.',
     k.saveProject(path + 'inversionERT/' + filename + 'bkp')
 
     return k
+
+
+def getR2out(imaging_path, files, typ='R2'):
+    getR3out(imaging_path, files, typ='R2')
+    
+def getR3out(imaging_path, files, typ='R3t'):
+    """Reat the .out file and parse its content.
+    
+    Returns
+    -------
+    Dataframe with the dataset name, and the RMS decrease for each iteration.
+    """
+    
+    DF_RMS = []
+    for i, file_survey in enumerate(files):
+        fname = os.path.join(imaging_path, 'inversionERT') + '/' + file_survey + '/invdir/' + typ + '.out'
+        
+        with open(fname, 'r') as f:
+            lines = f.readlines()
+        name = ''
+        idataset = 0
+        iiter = 0
+        resRMS = np.nan
+        phaseRMS = np.nan
+        read = np.nan
+        rejected = np.nan
+        irow = 0
+        df = pd.DataFrame(columns=['name', 'dataset', 'iteration', 'resRMS',
+                                   'phaseRMS', 'read', 'rejected', 'success'])
+        for x in lines:
+            success = 'N/A'
+            line = x.split()
+            if len(line) > 1:
+                if line[0] == 'Iteration':
+                    iiter += 1
+                elif ('measurements' in x) & ('read:' in x):
+                    print(line)
+                    read = int(line[5])
+                    # rejected = int(line[5])
+                elif line[0] == 'Final':
+                    resRMS = float(line[3])
+                    df.loc[irow, :] = [name, idataset, iiter, resRMS, phaseRMS,
+                                       read, rejected, success]
+                    irow += 1
+                elif line[0] == 'FATAL:':
+                    resRMS = np.nan
+                elif line[0] == 'Processing':
+                    iiter = 0
+                    idataset += 1
+                    # if idataset <= len(surveys[i]):
+                    #     name = i
+                    # else:
+                    # name = 'dataset{:03.0f}'.format(idataset)
+                    name = file_survey
+        df = df.apply(pd.to_numeric, errors='ignore').reset_index(drop=True)
+        DF_RMS.append(df)
+
+    DF_RMS = pd.concat(DF_RMS)
+        
+    return DF_RMS
+    
+    

@@ -21,7 +21,7 @@ def get_cmd():
 
     period = parse.add_argument_group('period')
     period.add_argument('-cycle', '--cycle', nargs='+',
-                        help='list of cycle', type=int, default=[3], required=False)
+                        help='list of cycle', type=int, default=[7], required=False)
     period.add_argument(
         '-startD', type=str, help='start date to analyse', default='None', required=False)
     period.add_argument('-endD', type=str, help='end date',
@@ -30,7 +30,7 @@ def get_cmd():
 
     process_param = parse.add_argument_group('process_param')
     process_param.add_argument(
-        '-scenario', type=str, help='Scenario', default='A', required=False)
+        '-scenario', type=str, help='Scenario', default='Abis', required=False)
     process_param.add_argument(
         '-recErr', type=int, help='Rec. error', default=5, required=False)
     process_param.add_argument(
@@ -38,18 +38,20 @@ def get_cmd():
     process_param.add_argument('-filter_seq_rec', type=int,
                                help='filter sequence rec', default=0, required=False)
     process_param.add_argument(
-        '-reprocessed', type=int, help='reprocessed', default=0, required=False)
+        '-reprocessed', type=int, help='reprocessed', default=1, required=False)
     args = parse.parse_args()
     return(args)
 
 
 args = get_cmd()
 
-# args.startD = '29/6/2022,13:50'
-# args.endD = '30/6/2022,14:50'
+# cycle 7
+args.startD = '29/6/2022,14:14'
+args.endD = '29/6/2022,15:03'
 
-args.startD = '8/6/2022,9:59'
-args.endD = '8/6/2022,11:31'
+
+# args.startD = '8/6/2022,9:59'
+# args.endD = '8/6/2022,11:31'
 
 
 sc_nb = args.scenario
@@ -57,27 +59,27 @@ sc_nb = args.scenario
 def define_sources_prop(sc_nb):
     
     ls_sc = {
-                'A': {'idS': [24], 'wS': [1], 'rho0':100,'prior': False,'reduce2d':True,
+                'A': {'idS': [0], 'wS': [1], 'rho0':100,'prior': False,'reduce2d':True,
                       },
-                'A3d': {'idS': [24], 'wS': [1], 'rho0':100,'prior': False,'reduce2d':False,
+                'Abis': {'idS': [12], 'wS': [1], 'rho0':100,'prior': False,'reduce2d':True,
                       },
-                'B': {'idS': [40], 'wS': [1], 'rho0':100,'prior': False,'reduce2d':True,
+                'B': {'idS': [20], 'wS': [1], 'rho0':100,'prior': False,'reduce2d':True,
                       },
-                'B3d': {'idS': [40], 'wS': [1], 'rho0':100,'prior': False,'reduce2d':False,
+                'B3d': {'idS': [20], 'wS': [1], 'rho0':100,'prior': False,'reduce2d':False,
                       },
-                'C': {'idS': [40], 'wS': [1], 'rho0':None,'prior': False,'reduce2d':True,
+                'C': {'idS': [2], 'wS': [1], 'rho0':100,'prior': False,'reduce2d':True,
                       }, # Same as B but with real background
-                'C3d': {'idS': [40], 'wS': [1], 'rho0':None,'prior': False,'reduce2d':False,
+                'Cbis': {'idS': [2], 'wS': [1], 'rho0':None,'prior': False,'reduce2d':True,
                       }, # Same as B but with real background
-                'D': {'idS': [40], 'wS': [1], 'rho0':None, 'prior': True,'reduce2d':True,
+                'D': {'idS': [20], 'wS': [1], 'rho0':None, 'prior': True,'reduce2d':True,
                       },# Same as C but with prior m0
-                'E': {'idS': [24,40], 'wS': [0.5,0.5], 'rho0':100,'reduce2d':True,
+                'E': {'idS': [12,20], 'wS': [0.5,0.5], 'rho0':100,'reduce2d':True,
                       'prior': False,
                       },
-                'E3d': {'idS': [24,40], 'wS': [0.5,0.5], 'rho0':100,'reduce2d':False,
+                'E3d': {'idS': [12,20], 'wS': [0.5,0.5], 'rho0':100,'reduce2d':False,
                       'prior': False,
                       },
-                'F': {'idS': [14,40], 'wS': [0.85,0.15], 'rho0':None,'reduce2d':True,
+                'F': {'idS': [12,20], 'wS': [0.85,0.15], 'rho0':None,'reduce2d':True,
                       'prior': False,
                       },
         }
@@ -124,9 +126,22 @@ ax.get_xaxis().set_major_formatter(mdates.DateFormatter("%d/%m - %Hh"))
 k_indiv_merged = surveyPRD.process_ERT(imaging_path,
                                        selected_files_ERT,
                                        ERT_log,
-                                       reprocessed=bool(args.reprocessed),
+                                       reprocessed=False, #bool(args.reprocessed),
                                        recip=args.recErr,
                                        )
+
+
+# df_rms = proc.getR2out(imaging_path,
+#                        selected_files_ERT
+#                        )
+
+
+# k_indiv_merged[0].dirname
+# k_indiv_merged[0].getR2out()
+
+# df = pd.DataFrame(columns=['name', 'dataset', 'iteration', 'resRMS',
+#                            'phaseRMS', 'read', 'rejected', 'success'])
+
 # %%
 proc.plot_ERT(k_indiv_merged[0], vmin=-10, vmax=1,
               attr="Sensitivity_map(log10)", index=0)
@@ -134,6 +149,7 @@ proc.plot_ERT(k_indiv_merged[0], vmin=0, vmax=50,
               attr="Resistivity(ohm.m)", index=0)
 
 # %%
+# k_indiv_merged[0].elec
 nodes = k_indiv_merged[0].mesh.node
 k_MALM_stk = []
 idS = scenario['idS']
@@ -158,7 +174,7 @@ for f in selected_files_MALM[:]:
                                       f,
                                       k_indiv_merged[0],
                                       reduce2d=scenario['reduce2d'],
-                                      nVRTe_rows=9, nVRTe_cols=9,
+                                      nVRTe_cols=6*2+1, nVRTe_rows=4*2+1,
                                       idS=idS,
                                       wS=wS,
                                       filter_seq_rec=args.filter_seq_rec,
@@ -172,19 +188,30 @@ for f in selected_files_MALM[:]:
     else:
         [k_MALM, imin, _, nodes, _, _, _, _]  = outMALM
     mesh = k_MALM.mesh.df
+    
+    
+    # plt.plot(R_obs)
+    # plt.plot(R_sim[:,0])
+    
+    # np.shape(R_sim)
+    
+    
+    # k_MALM.param['node_elec']
+    #%%
     imin, nodes, grid = proc.create_source_grid(mesh, k_MALM,
-                                                nVRTe_rows=7, nVRTe_cols=7,)
+                                                nVRTe_cols=6*2+1, nVRTe_rows=4*2+1)
     
-    fig, ax = plt.subplots(1,1)
-    ax.scatter(grid[:,0],grid[:,2])
-    ax.set_xlim([0,0.47])
-    ax.set_ylim([0,0.5])
-    ax.set_xlabel('x (m)')
-    ax.set_xlabel('z (m)')
-    elecs = k_indiv_merged[0].surveys[0].elec
-    
-    ax.scatter(elecs['x'],elecs['z'])
-    plt.show()
+    # fig, ax = plt.subplots(1,1)
+    # ax.scatter(grid[:,0],grid[:,2])
+    # ax.set_xlim([0,0.47])
+    # ax.set_ylim([0,0.5])
+    # ax.set_xlabel('x (m)')
+    # ax.set_xlabel('z (m)')
+    # elecs = k_indiv_merged[0].surveys[0].elec
+    # ax.scatter(elecs['x'],elecs['z'])
+    # ax.set_xlim([0,0.47])
+    # ax.set_ylim([0,0.50])
+    # plt.show()
     
     
     text_file = open("vrte_positions.txt", "wt")
@@ -270,7 +297,8 @@ if scenario['reduce2d']:
     dim = '2d'
          
 for i, f in enumerate(selected_files_MALM[:]):
-        
+    f = selected_files_MALM[0]
+    # i=0
     m0_MALM = proc.m0_MALM(imaging_path + inversionPathMALM + f,
                             method_m0='F1', typ=dim
                             )
@@ -287,7 +315,7 @@ for i, f in enumerate(selected_files_MALM[:]):
 # %%
 for i, f in enumerate(selected_files_MALM[:]):
     # f = selected_files_MALM[2]
-    pareto = True
+    pareto = False
     sol = proc.invert_MALM(imaging_path + inversionPathMALM + f,
                            pareto=pareto, wr=1e-2, typ=dim,
                            prior=scenario['prior']
