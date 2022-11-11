@@ -51,12 +51,12 @@
 
     Timing Summary
     ==============
-    Total time taken:                                39. s
+    Total time taken:                                38. s
 
     Percent time taken forming element equations:    0.1 %
     Percent time taken solving forward  equations:   3.3 %
-    Percent time taken forming Jacobian:            12.4 %
-    Percent time taken solving inverse equations:   82.0 %
+    Percent time taken forming Jacobian:            12.7 %
+    Percent time taken solving inverse equations:   81.6 %
     Percent time taken calculating res. matrix:      0.0 %
 
     Timing Details
@@ -66,9 +66,9 @@
     Number of calls to solve forward equations:      216
     Average time taken in call:                      0.0 s
     Number of calls to form Jacobian:                  1
-    Average time taken in call:                      4.8 s
+    Average time taken in call:                      4.9 s
     Number of calls to solve inverse equations:        2
-    Average time taken in call:                     15.9 s
+    Average time taken in call:                     15.7 s
     Number of calls to calculate res. matrix:          0
     Average time taken in call:                      0.0 s
 

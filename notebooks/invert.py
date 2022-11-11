@@ -25,8 +25,10 @@ def get_cmd():
     period = parse.add_argument_group('period')
     # period.add_argument('-cycle', type=list, help='cycle to analyse', default=[None], required=False) #[0,1,2,3,4,5]
     period.add_argument('-cycle', '--cycle', nargs='+',
-                        help='list of cycle', type=int, default=[3,4,5,6,7,8,9], required=False)
-                        # help='list of cycle', type=int, default=[7], required=False)
+                        # help='list of cycle', type=int, default=[3,4,5,6,7,8], required=False)
+                        help='list of cycle', type=int, default=[7,8], required=False)
+                        # help='list of cycle', type=int, default=[6,7], required=False)
+                        # help='list of cycle', type=int, default=-99, required=False)
     # period.add_argument('-cycle', '--cycle', nargs='+',
     #                     help='list of cycle', type=int, default=[4,5,6,7,8,9], required=False)
     period.add_argument(
@@ -52,23 +54,42 @@ def get_cmd():
     process_param.add_argument('-filter_seq_rec', type=int,
                                help='Filter sequence rec', default=0, required=False)
     process_param.add_argument('-petro', type=int,
-                               help='Apply Archie trans.', default=0, required=False)
+                               help='Apply Archie trans.', default=1, required=False)
     process_param.add_argument('-pareto', type=int,
                                help='pareto', default=0, required=False)
     process_param.add_argument('-wr', type=float,
-                               help='reg. weight', default=10, required=False)
+                               help='reg. weight', default=1, required=False)
     args = parse.parse_args()
     
     
-    # args.startD = '29/6/2022,14:14'
-    # args.endD = '29/6/2022,15:03'
+    # args.startD = '21/6/2022,13:50'
+    # # args.startD = '29/6/2022,09:29'
+    # args.endD = '29/6/2022,10:13'
+    
+    # args.startD = '11/7/2022,11:19' 
+    # args.endD = '12/7/2022,13:05'
+
+    # args.startD = '11/7/2022,11:19' 
+    # args.endD = '12/7/2022,13:05'
+    
+    
+    # args.startD = '29/6/2022,9:00'
+    # args.endD = '5/7/2022,17:00'
+    
+    # ALL
+    # 13/5/2022	16:25
+    # 12/7/2022	12:50
+
+    # args.startD = '13/5/2022,16:25'
+    # args.endD = '12/7/2022,12:50'
+    
     return(args)
 
 # %%
 # print(args)
 # args.cycle = [1,2,3,4]
 ERT_log_all = surveyPRD.load_ERT_survey_log()
-irr_log_all = surveyPRD.load_irr_log_drive()
+irr_log_all = surveyPRD.load_irr_log()
 ax = surveyPRD.plot_timeline(ERT_log_all, irr_log_all, dropMALM=True)
 # tdelta = (ERT_log_all['datetime'].iloc[0]-ERT_log_all['datetime'].iloc[-1])/10
 # ax.get_xaxis().set_major_locator(mdates.DayLocator(interval=5))
@@ -83,7 +104,12 @@ print(ERT_log_all)
 # %%
 # k.createBatchSurvey(imaging_path + 'filenames_ERT')
 # k.invert(parallel=True)
-def run_ERT_ind(args, selected_files_ERT, ERT_log):
+def run_ERT_ind(
+                args, 
+                selected_files_ERT, 
+                ERT_log,
+                **kwargs,
+                ):
     k_indiv_merged = surveyPRD.process_ERT(imaging_path,
                                            selected_files_ERT,
                                            ERT_log,
@@ -91,6 +117,7 @@ def run_ERT_ind(args, selected_files_ERT, ERT_log):
                                            recip=args.recErr,
                                            )
     
+    df_rms = []
     for fi in range(len(selected_files_ERT)):
         proc.plot_ERT(k_indiv_merged[fi], vmin=0, vmax=2,
                       attr="Resistivity(log10)")
@@ -101,29 +128,44 @@ def run_ERT_ind(args, selected_files_ERT, ERT_log):
         # nb_of_rejected_quad[i] = ki.surveys[0]
         # final_rms = 
         # nb_of_iter = 
+
+        
+    # Plot evolution RMS
+    # ---------------------------------------------------------------
+    df_rms = (proc.getR3out(imaging_path,
+                           selected_files_ERT,
+                           )
+                  )
     
+    df_rms['datetime'] = ''
+    for i, dfn in enumerate(df_rms.name):
+        test = ERT_log[ERT_log['Name']==dfn]['datetime'].values[0]
+        df_rms['datetime'].iloc[i] = test
+    
+    # df_rms['datetime'] 
+    df_rms.set_index('datetime', inplace=True)
+    
+    
+    mosaic = '''A
+                B
+            '''
+    fig, axs = plt.subplot_mosaic(mosaic,sharex=True,figsize=(7,4))
+    
+    df_rms.plot.hist(y='resRMS',ax=axs['A'])
+    df_rms.plot.hist(y='read',ax=axs['B'])
+    plt.savefig(imaging_path+'inversionERT/' + 'performance.png', dpi=350)
+    
+    df_rms.to_csv(imaging_path+'inversionERT/RMS' + str([*args.cycle])+'.csv')
+
     # %%
     # surveyPRD.add2pkl_ERT()
     df_ERT = surveyPRD.add2df_ERT(k_indiv_merged,
                                   selected_files_ERT,
                                   ERT_log)
+      
     
-    
-    df_rms = proc.getR3out(imaging_path,
-                  selected_files_ERT,
-                  )
-    
-    df_rms.to_csv(imaging_path+'inversionERT/RMS' + str([*args.cycle])+'.csv')
-    # Plot evolution RMS
-    # ---------------------------------------------------------------
-    
-    
-    # Plot nb of rejected points
-    # ---------------------------------------------------------------
-    
-    
-    
-    
+    df_ERT.to_csv(imaging_path+'inversionERT/dfERT' + str([*args.cycle])+'.csv')
+
     # surveyPRD.df_ERT_diff(df_ERT,selected_files_ERT,
     #                 background_diff=False)
     
@@ -155,13 +197,14 @@ def run_ERT_ind(args, selected_files_ERT, ERT_log):
     fig, ax = plt.subplots((2), figsize=(8, 5), sharex=(True))
     ax0 = surveyPRD.plot_timeline(ERT_log, irr_log, ax=ax[0], dropMALM=True)
     ax = surveyPRD.plot_PRD_effect_ER(
-        k_indiv_merged, df_ERT, irr_log, ax=ax[1])
+        k_indiv_merged, df_ERT, irr_log, ax=ax[1],**kwargs)
     plt.savefig(imaging_path+'inversionERT/' + 'PRDeffect' + str([*args.cycle]),
                 dpi=450)
     
     if args.petro:
-        rFluid = 1
-        porosity = 0.4
+        sw_conductivity = 594*(1e-6/1e-2)
+        rFluid = 1/sw_conductivity
+        porosity = 0.55
         df_SWC = df_ERT.copy()
         for cols in list(df_ERT.columns):
             if type(cols)==str:
@@ -169,8 +212,9 @@ def run_ERT_ind(args, selected_files_ERT, ERT_log):
             else:
                 df_SWC[cols] = surveyPRD.Archie_rho2sat(df_ERT[cols].to_numpy(),
                                                           rFluid, porosity, 
-                                                          a=1.0, m=2.0, n=2.0)
-            
+                                                          a=1.0, m=1.9, n=1.2)
+        df_SWC.to_csv(imaging_path+'inversionERT/dfSWC' + str([*args.cycle])+'.csv')
+
         
     return k_indiv_merged, df_ERT
 
@@ -183,6 +227,9 @@ def run_TL(selected_files_ERT):
     # selected_files_ERT_reverse = list(reversed(selected_files_ERT))
     # idTL_reverse = list(reversed(idTL))
     cycle_ERT_time = list(np.unique(idTL))
+    print('***'*12)
+    print(cycle_ERT_time)
+    print('***'*12)
 
     # regType=1 # background constrainst inv
 
@@ -192,7 +239,7 @@ def run_TL(selected_files_ERT):
         regType=args.TLreg,
         recip=5,
         idfileNames=cycle_ERT_time,
-        reprocessed=True #bool(args.reprocessed),
+        reprocessed=bool(args.reprocessed),
         # reprocessed=True,
     )
     
@@ -270,9 +317,11 @@ def run_TL(selected_files_ERT):
 
 
 def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
-             inversionPathMALM):
+             inversionPathMALM,
+             **kwargs):
     ''' Plot the observed data '''
     
+
     k_MALM = []
     f_MALM = []
     R_obs_stck = []
@@ -291,7 +340,8 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
                                   filter_seq=True,
                                   filter_seq_rec=False,
                                   percent_rec=1e9,
-                                  ax=ax
+                                  ax=ax,
+                                  m=71
                                   )
         if len(R_obs_stck)>0:
             if len(R_obs)==len(R_obs_stck[0]):
@@ -306,6 +356,10 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
             f_MALM.remove(ff)
 
 
+
+    
+
+
     #%%
     df_MALM = surveyPRD.add2df_MALM(R_obs_stck,
                                     f_MALM,
@@ -318,10 +372,11 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
     
     ax0 = surveyPRD.plot_timeline(ERT_log, irr_log, ax=ax[0], dropMALM=True)
 
-    ax = surveyPRD.plot_PRD_effect_MALM(k_indiv_merged, df_MALM, ax=ax[1])
+    surveyPRD.plot_PRD_effect_MALM(k_indiv_merged, df_MALM, ax=ax[1], **kwargs)
     # ax.get_xaxis().set_major_locator(mdates.HourLocator(interval=5))
     # ax.get_xaxis().set_major_formatter(mdates.DateFormatter("%d/%m - %Hh"))
-
+    ax[1].grid('on', which='major', axis='x',color='0.95' )
+    ax[1].grid('on', which='major', axis='y',color='0.95' )
     plt.xticks(rotation=35)
     plt.tight_layout()
 
@@ -339,6 +394,7 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
                            k_indiv_merged,
                            ERT_log,
                            vmin=-625, vmax=125,
+                           f_MALM=f_MALM,
                            )
     plt.close('all')
 
@@ -355,7 +411,7 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
 
     fig, ax = plt.subplots((2), figsize=(8, 5), sharex=(True))   
     ax0 = surveyPRD.plot_timeline(ERT_log, irr_log, ax=ax[0], dropMALM=True)
-    ax = surveyPRD.plot_PRD_effect_MALM_diff(k_indiv_merged, df_MALM_diff_b, ax=ax[1])
+    surveyPRD.plot_PRD_effect_MALM_diff(k_indiv_merged, df_MALM_diff_b, ax=ax[1])
     # ax.get_xaxis().set_major_locator(mdates.HourLocator(interval=5))
     # ax.get_xaxis().set_major_formatter(mdates.DateFormatter("%d/%m - %Hh"))
     plt.xticks(rotation=35)
@@ -380,7 +436,9 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
     
     fig, ax = plt.subplots((2), figsize=(8, 5), sharex=(True))   
     ax0 = surveyPRD.plot_timeline(ERT_log, irr_log, ax=ax[0], dropMALM=True)
-    ax = surveyPRD.plot_PRD_effect_MALM_diff(k_indiv_merged, df_MALM_diff, ax=ax[1])
+    surveyPRD.plot_PRD_effect_MALM_diff(k_indiv_merged, df_MALM_diff, ax=ax[1])
+    ax[1].grid('on', which='major', axis='x',color='0.95' )
+    ax[1].grid('on', which='major', axis='y',color='0.95' )
     # ax.get_xaxis().set_major_locator(mdates.HourLocator(interval=5))
     # ax.get_xaxis().set_major_formatter(mdates.DateFormatter("%d/%m - %Hh"))
     plt.xticks(rotation=35)
@@ -407,10 +465,53 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
     plt.close('all')
 
         
+    #%% Anisotropy 
+    k_MALM_anisotropy = []
+    m0_anisotropy = []
+    for i, f in enumerate(selected_files_MALM):
+        if '8returns' in f:
+            b_return = [1,4,8,17,20,24,33,36,40,49,52,64]
+            for k in range(len(b_return)):
+                print('*'*24)
+                print(k,f)
+                print('*'*24)
+                fnew = f.split('.csv')[0] + '_B'+ str(b_return[k])
+                background_ERT_time = int(f.split('_')[2])
+                for j, n in enumerate(ERT_log['Name'][ERT_log['method'] == 'ERT']):
+                    if 'PRD_ERT_' + str(background_ERT_time) in n:
+                        index_ERT_backgrd = j
+                outMALM = proc.prepare_icsd(imaging_path + inversionPathMALM,
+                                                fnew,
+                                                k_indiv_merged[index_ERT_backgrd],
+                                                reprocessed=bool(args.reprocessed),
+                                                nVRTe_cols=6*2+1, nVRTe_rows=4*2+1,
+                                                filter_seq_rec=args.filter_seq_rec,
+                                                filter_seq=args.filter_seq,
+                                                b=b_return[k],
+                                                reduce2d=True,
+                                                )
+                k_MALM_anisotropy.append(outMALM[0])
+                
+                m0i,ax,fig = proc.m0_MALM(imaging_path + inversionPathMALM + fnew,
+                                       method_m0='F1', typ=args.dim,
+                                       show=True
+                                       )
+                plt.close()
+                fig.savefig(os.path.join(imaging_path,inversionPathMALM, fnew,'m0' + '_breturn' + str(b_return[k]) + '.png')
+                            , dpi=300)
+                m0_anisotropy.append(m0i)
+                # pl = proc.plot_m0_MALM(k_MALM_anisotropy[k], m0_anisotropy[k], pl=None, ext=['png'], show=False,
+                #                   index=0)
+                
+            # [_, imin, R_obs, nodes, R_icsd] = outMALM
+            plt.close('all')
         
+            # plt.plot(R_obs)
+            # plt.plot(R_icsd[:,0])
 
-    #%%
-    ERT_log
+    #%% 
+    
+    
     k_MALM = []
     for i, f in enumerate(selected_files_MALM):
         print('*'*24)
@@ -427,20 +528,14 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
         outMALM = proc.prepare_icsd(imaging_path + inversionPathMALM,
                                         f,
                                         k_indiv_merged[index_ERT_backgrd],
-                                        # reprocessed=bool(args.reprocessed),
-                                        reprocessed=True,
+                                        reprocessed=bool(args.reprocessed),
+                                        # reprocessed=True,
                                         nVRTe_cols=6*2+1, nVRTe_rows=4*2+1,
                                         filter_seq_rec=args.filter_seq_rec,
                                         filter_seq=args.filter_seq,
                                         reduce2d=True,
                                         )
         k_MALM.append(outMALM[0])
-        
-    [_, imin, R_obs, nodes, R_icsd] = outMALM
-    plt.close('all')
-
-    # plt.plot(R_obs)
-    # plt.plot(R_icsd[:,0])
 
     # %%
 
@@ -455,13 +550,14 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
                                method_m0='F1', typ=args.dim,
                                show=True
                                )
+        plt.close()
         fig.savefig(os.path.join(imaging_path,inversionPathMALM, f,'m0.png'), dpi=300)
         m0.append(m0i)
         pl = proc.plot_m0_MALM(k_MALM[j], m0[j], pl=None, ext=['png'], show=False,
                           index=0)
         pl.close()
         pv.close_all()
-
+        
 
         j += 1
         plt.close('all')
@@ -477,8 +573,10 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
 
     # %%
 
+    icsd_stk = []
     sol_stk = []
     f_names = []
+    rms = []
     j = 0
 
     for i, f in enumerate(selected_files_MALM):
@@ -491,12 +589,13 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
         pareto = bool(args.pareto)
         prior = False
         # for prior in [True,False]:
-        sol, ax, fig = proc.invert_MALM(imaging_path + inversionPathMALM + f,
-                                    wr=args.wr, typ=args.dim, pareto=pareto, show=False,
+        icsd, sol, ax, fig = proc.invert_MALM(imaging_path + inversionPathMALM + f,
+                                    wr=args.wr, typ=args.dim, pareto=pareto, show=True,
                                     prior = prior,
                                     # fname_sim='VRTeSim_icsd.txt'
                                     )
         sol_stk.append(sol)
+        icsd_stk.append(icsd)
         fig.savefig(os.path.join(imaging_path,inversionPathMALM, f,'icsd.png'), dpi=300)
         plt.close('all')
         # proc.plot_MALM(k_MALM[i], nodes, imin, sol[i])
@@ -515,8 +614,20 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
         f_names.append(f)
         pv.close_all()
 
+        # RMS analysis of the ICSD
+        # -------------------------------------------------------------------
+        date_title = ERT_log[ERT_log['Name']==f]['datetime'].dt.date.values[0]
 
-
+        rms.append(
+                    icsd.RMSAnalysis(
+                                    path=imaging_path + inversionPathMALM + f + '/', 
+                                    prefix_name=f,
+                                    title = str(date_title)
+                                    )
+                   )
+        
+        
+        
 
     if pareto:
         sol_icsd_stk_new = [x[0].solution.x for x in sol_stk]
@@ -536,12 +647,115 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
                         str([*args.cycle]) 
                         + '.csv', index=False)
     
+    
     np.savetxt(imaging_path + 
                 inversionPathMALM + 
-                'vrte_nodes_in_mesh.txt',
-                imin)
+                'rms_ICSD.txt',
+                rms)
     
     
+    
+    fig, ax = plt.subplots(1)
+    rms_df = pd.DataFrame(rms)
+    rms_df.columns = ['rms_ICSD']
+    rms_df['datetime'] = ERT_log[ERT_log['Name'].isin(f_names)]['datetime'].values
+    rms_df.set_index('datetime',inplace=True)
+    rms_df.plot.hist(y='rms_ICSD')
+    plt.savefig(imaging_path + 
+                inversionPathMALM + 'RMS_ICSD.png', dpi=350)
+    
+    # np.savetxt(imaging_path + 
+    #             inversionPathMALM + 
+    #             'vrte_nodes_in_mesh.txt',
+    #             imin)
+    
+    #%%
+    dates = ERT_log[ERT_log['Name'].isin(f_names)]['datetime'].dt.strftime("%d %B").values #.strptime.dt.date.values
+
+    def subplot_results_icsd(icsd_stk,f_names,dates,savename,clim=[0,0.1]):
+        # if len(f_names)>10:
+            # nrows= int(len(f_names)/2)
+        # fig , axs = plt.subplots(int(len(f_names)/7),int(len(f_names)/6),#figsize=(18,18),
+        #                          sharex=True,sharey=True)
+        
+        
+        nrows = 3
+        ncol = 2
+        if len(f_names)>6:
+            nrows = 3
+            ncol = 3
+        if len(f_names)>9:
+            nrows = 4
+            ncol = 4
+        if len(f_names)>16:
+            ncols = 5
+            nrows = 4
+
+        fig , axs = plt.subplots(nrows,ncols,
+                                 sharex=True,
+                                 sharey=True,
+                                 #figsize=(5,3)
+                                 )
+
+        ax_r= axs.ravel()    
+        j = 0          
+        for i in range(len(f_names)):
+            cbarplot = False
+            if i == len(f_names)-1:
+                cbarplot = True
+                
+            ax_subi, f_subi = icsd_stk[i].showResults(
+                                                        ax=ax_r[j],
+                                                        fig_name=str(dates[i]),
+                                                        lgd_label='',
+                                                        cbarplot=cbarplot,
+                                                        clim=[0,0.1],
+                                                        vrte_pos=False,
+                                                        )
+            ax_r[j].set_title(dates[i],fontsize=6)
+            ax_r[j].tick_params(axis='y', labelsize=6)
+
+            ax_r[j].set_ylabel('y [m]', fontsize=7)
+            if i>0:
+                ax_r[j].set_ylabel('')
+            if i == len(f_names):
+                ax_r[j].set_xlabel('x [m]', fontsize=7)
+            else:
+                xax = ax_r[j].axes.get_xaxis()
+                xax = xax.set_visible(False)
+            j += 1 
+    
+        for i2del in range(len(ax_r)):
+            if i2del>=len(icsd_stk):
+                fig.delaxes(ax_r[i2del])
+                # axes[i, j].remove()
+    
+        plt.subplots_adjust(wspace=-0.8, hspace=0.8)    
+        plt.tight_layout()        
+        plt.savefig(imaging_path + 
+                    inversionPathMALM + savename, dpi=350)
+    
+
+    matching = [i for i, s in enumerate(f_names) if "MALM2" in s]
+    matching_bool = [False]*len(f_names)
+    matching_bool = np.array(matching_bool)
+    matching_bool[matching] = True
+    
+    subplot_results_icsd(
+                         np.array(icsd_stk)[matching_bool],
+                         np.array(f_names)[matching_bool],
+                         np.array(dates)[matching_bool],
+                         clim=[0,0.1],
+                         savename='subplots_ICSD_stem.png'
+                         )
+    subplot_results_icsd(
+                        np.array(icsd_stk)[~matching_bool],
+                        np.array(f_names)[~matching_bool],
+                        np.array(dates)[~matching_bool],
+                        clim=[0,0.1],
+                        savename='subplots_ICSD.png'
+                         )
+        
     #%%
 
     
@@ -552,11 +766,17 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
                                                   imin,
                                                   df_MALM_icsd, irr_log,
                                                   ax=ax[1],
-                                                  hours_interval=10)
+                                                  hours_interval=10,
+                                                  **kwargs)
+    ax[1].grid('on', which='major', axis='x',color='0.95' )
+    ax[1].grid('on', which='major', axis='y',color='0.95' )
     # ax.get_xaxis().set_major_locator(mdates.HourLocator(interval=5))
     # ax.get_xaxis().set_major_formatter(mdates.DateFormatter("%d/%m - %Hh"))
     plt.xticks(rotation=35)
     plt.tight_layout()
+    
+    # Add a zoom to irrigation
+    # -----------------------------------------------------------------
 
     if type(args.cycle) is int:
         args.cycle = [args.cycle]
@@ -584,7 +804,7 @@ if __name__ == '__main__':
     # args.startD = '5/7/2022,13:50'
     # args.endD = '9/7/2022,14:50'
     
-    
+    detrend = 0.1/4
 
     inversionPathMALM = surveyPRD.definePaths(args)
 
@@ -594,7 +814,9 @@ if __name__ == '__main__':
 
     # ERT inversion
     # -----------------------------------
-    k_indiv_ERT, df_ERT = run_ERT_ind(args, f_ERT, ERT_log)
+    k_indiv_ERT, df_ERT = run_ERT_ind(args, f_ERT, ERT_log,
+                                      detrend=detrend)
+    
 
     # TL ERT inversion
     # -----------------------------------
@@ -604,4 +826,5 @@ if __name__ == '__main__':
     # %% MALM icsd inversion
     # -----------------------------------
     if args.icsd:
-        run_icsd(f_MALM, f_ERT, k_indiv_ERT, inversionPathMALM)
+        run_icsd(f_MALM, f_ERT, k_indiv_ERT, inversionPathMALM,
+                 detrend=detrend)

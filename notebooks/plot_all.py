@@ -36,23 +36,6 @@ f_ERT, f_MALM,  ERT_log, irr_log = surveyPRD.load_log_files(args)
 #%%
 
 
-import matplotlib.pyplot as plt
-
-fig1, ax = plt.subplots()
-ax.plot(range(10))
-
-type(ax)
-fig = plt.figure()
-ax = fig.add_subplots()
-ax = fig.subplots()
-
-fig2.add_axes(ax)
-# fig2.axes.append(ax)
-# fig2.axes=ax
-# plt.show()
-plt.savefig('test.png')
-
-
 #%%
 im_fig = []
 im_ax = []

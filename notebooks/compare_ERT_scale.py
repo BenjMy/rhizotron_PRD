@@ -153,6 +153,10 @@ for label, ax in axs.items():
 plt.savefig('../figures/Cond_variations.png', dpi=400)
 
 
+#%% plott 1:1 ERT changes versus ET
+
+
+ 
 #%%
 fig, axs = plt.subplot_mosaic(mosaic,
                               constrained_layout=True,

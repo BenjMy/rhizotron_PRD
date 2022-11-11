@@ -33,3 +33,51 @@
    Iteration   1
      Initial RMS Misfit:        25.28      Number of data ignored:    29
      Alpha:       12263.584   RMS Misfit:        2.22  Roughness:        0.500
+     Alpha:        5692.251   RMS Misfit:        2.16  Roughness:        0.543
+     Alpha:        2642.109   RMS Misfit:        1.72  Roughness:        1.061
+     Alpha:        1226.358   RMS Misfit:        1.48  Roughness:        1.576
+     Alpha:         569.225   RMS Misfit:        1.26  Roughness:        2.449
+     Alpha:         264.211   RMS Misfit:        1.13  Roughness:        3.625
+     Alpha:         122.636   RMS Misfit:        1.08  Roughness:        5.318
+     Alpha:          56.923   RMS Misfit:        1.12  Roughness:        7.575
+     Step length set to      1.000
+     Final RMS Misfit:        1.08
+     Data misfit:          2467.00
+     Model misfit:          652.24
+     Total misfit:         3119.23
+     Attempted to update data weights and caused overshoot
+     treating as converged
+
+ Solution converged - Outputing results to file
+
+ Calculating sensitivity map
+
+ End of data:  Terminating
+
+
+    Timing Summary
+    ==============
+    Total time taken:                               215. s
+
+    Percent time taken forming element equations:    0.0 %
+    Percent time taken solving forward  equations:   1.8 %
+    Percent time taken forming Jacobian:             2.4 %
+    Percent time taken solving inverse equations:   95.3 %
+    Percent time taken calculating res. matrix:      0.0 %
+
+    Timing Details
+    ==============
+    Number of calls to form element equations:         9
+    Average time taken in call:                      0.0 s
+    Number of calls to solve forward equations:      648
+    Average time taken in call:                      0.0 s
+    Number of calls to form Jacobian:                  1
+    Average time taken in call:                      5.2 s
+    Number of calls to solve inverse equations:        8
+    Average time taken in call:                     25.6 s
+    Number of calls to calculate res. matrix:          0
+    Average time taken in call:                      0.0 s
+
+
+ >> Program ended normally
+

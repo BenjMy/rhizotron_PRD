@@ -29,7 +29,7 @@ def definePaths(args):
 def load_log_files(args):
     ERT_log = load_ERT_survey_log(startDate=args.startD, endDate=args.endD,
                                   cycles=args.cycle)
-    irr_log = load_irr_log_drive(startDate=args.startD, endDate=args.endD,
+    irr_log = load_irr_log(startDate=args.startD, endDate=args.endD,
                                  cycles=args.cycle)
 
     selected_files_ERT = ERT_log[ERT_log['method'] == 'ERT']['Name'].to_list()
@@ -56,6 +56,15 @@ def set_Xlim_LR_from_mesh(k_indiv_merged):
     return meshXYZ, meshXYZ['X'].max()/2
 
 
+
+def set_Xlim_LMR_from_mesh(k_indiv_merged):
+    ''' Define lim from left / middle / right using mesh nodes positions'''
+    meshXYZ = k_indiv_merged[0].mesh.df[['X', 'Y', 'Z']]
+    meshXYZ['X'].min()
+    meshXYZ['X'].max()
+    return meshXYZ, meshXYZ['X'].max()/3
+
+
 def plot_PRD_effect_icsd(k_indiv_merged, vrte_in_mesh, 
                          df_MALM_icsd, irr_log,
                          ax=None,
@@ -71,7 +80,7 @@ def plot_PRD_effect_icsd(k_indiv_merged, vrte_in_mesh,
     if 'soil' in kwargs:
         soil = kwargs['soil']
 
-    color=['orange', 'green']
+    color=['red','grey','blue']
     if 'color' in kwargs:
         color = kwargs['color']
    
@@ -86,18 +95,39 @@ def plot_PRD_effect_icsd(k_indiv_merged, vrte_in_mesh,
     id_left = irr_log[irr_log['where'].str.contains("1")].index.tolist()
     id_right = irr_log[irr_log['where'].str.contains("8")].index.tolist()
 
-    meshXYZ, midlleX = set_Xlim_LR_from_mesh(k_indiv_merged)
+    # meshXYZ, midlleX = set_Xlim_LR_from_mesh(k_indiv_merged)
 
-    idx_vrte_left_bool = meshXYZ['X'][vrte_in_mesh] < midlleX
+    
+    meshXYZ, split_x_zones = set_Xlim_LMR_from_mesh(k_indiv_merged)
+
+
+    if 'detrend' in kwargs:
+        # midlleX = midlleX +  kwargs['detrend']
+        split_x_zones = split_x_zones +  kwargs['detrend']
+        
+        
+    idx_vrte_left_bool = meshXYZ['X'][vrte_in_mesh] < split_x_zones
+    idx_vrte_middle_bool = (meshXYZ['X'][vrte_in_mesh] < 2*split_x_zones) & (meshXYZ['X'][vrte_in_mesh] > split_x_zones)
+    idx_vrte_right_bool = meshXYZ['X'][vrte_in_mesh] > 2*split_x_zones
+
     idx_vrte_left_bool = idx_vrte_left_bool.reset_index()
+    idx_vrte_middle_bool = idx_vrte_middle_bool.reset_index()
+    idx_vrte_right_bool = idx_vrte_right_bool.reset_index()
+    
     idx_vrte_left = idx_vrte_left_bool[idx_vrte_left_bool['X']].index.values
+    idx_vrte_middle = idx_vrte_middle_bool[idx_vrte_middle_bool['X']].index.values
+    idx_vrte_right = idx_vrte_right_bool[idx_vrte_right_bool['X']].index.values
         
     
-    left_right = ['Right']*len(df_MALM_icsd)
+    left_middle_right = ['Right']*len(df_MALM_icsd)
     for idxl in idx_vrte_left:
-        left_right[idxl] = 'Left'
+        left_middle_right[idxl] = 'Left'
     
-    df_MALM_icsd['LR']= left_right
+    for idxl in idx_vrte_middle:
+        left_middle_right[idxl] = 'Middle'
+        
+        
+    df_MALM_icsd['LMR']= left_middle_right
 
     tuple_cols_2_select_soil = []
     tuple_cols_2_select_stem = []
@@ -113,26 +143,27 @@ def plot_PRD_effect_icsd(k_indiv_merged, vrte_in_mesh,
                 tuple_cols_2_select_stem.append(tc[0])
 
     
-    if len(left_right) == len(df_MALM_icsd):
+    if len(left_middle_right) == len(df_MALM_icsd):
 
         if soil:
             soil_inject_df_MALM = df_MALM_icsd[tuple_cols_2_select_soil]
-            soil_inject_df_MALM['LR']= left_right
-            df_groups_soil_inj = soil_inject_df_MALM.droplevel(level=[1,2],axis=1).groupby(['LR']).sum()
+            soil_inject_df_MALM['LMR']= left_middle_right
+            df_groups_soil_inj = soil_inject_df_MALM.droplevel(level=[1,2],axis=1).groupby(['LMR']).sum()
             df_groups_soil_inj.columns = df_MALM_icsd[tuple_cols_2_select_soil].columns
     
             df_groups_soil_inj.T.droplevel(level=[0,2]).plot(xlabel='date', ylabel=ylabel, ax=ax,
                                     linestyle=':',
                                     marker='o',
                                     label='soil inj. sum curr.',
-                                    color=['grey', 'grey']
+                                    color=['red','grey','blue'],
+                                    alpha=0.3,
                                     )
 
 
         stem_inject_df_MALM = df_MALM_icsd[tuple_cols_2_select_stem]
-        stem_inject_df_MALM['LR']= left_right
+        stem_inject_df_MALM['LMR']= left_middle_right
 
-        df_groups_stem_inj = stem_inject_df_MALM.droplevel(level=[1,2],axis=1).groupby(['LR']).sum()
+        df_groups_stem_inj = stem_inject_df_MALM.droplevel(level=[1,2],axis=1).groupby(['LMR']).sum()
         # print(stem_inject_df_MALM)
         df_groups_stem_inj.columns = df_MALM_icsd[tuple_cols_2_select_stem].columns
 
@@ -141,7 +172,8 @@ def plot_PRD_effect_icsd(k_indiv_merged, vrte_in_mesh,
                                     marker=marker,
                                     label='stem inj. sum curr.',
                                     color=color)
-            
+        
+           
     return ax
 
 def plot_PRD_effect_SWC(k_indiv_merged, df_SWC, irr_log,
@@ -162,13 +194,88 @@ def plot_PRD_effect_SWC(k_indiv_merged, df_SWC, irr_log,
 def plot_PRD_effect_ER(k_indiv_merged, df_ERT, irr_log,
                        ax=None,
                        hours_interval=10,
-                       unit='mS/m'):
+                       unit='mS/m',
+                       **kwargs):
     
     ax = plot_PRD_effect(k_indiv_merged, df_ERT, irr_log,
                            ax,
                            hours_interval,
-                           unit=unit)
+                           unit=unit,
+                           **kwargs)
     return ax
+
+def DEPRECATED_PRD_effect():
+    # LR = True
+    # if 'LR' in kwargs:
+    #     LR = kwargs['LR']
+    # if 'topdown' in kwargs:
+    #     topdown = kwargs['topdown']
+        
+    
+    # if LR and topdown:
+    #     color=['limegreen', 'darkgreen','bisque', 'darkorange']
+    #     marker=['+']*4
+    # elif LR:
+    #     color=['darkgreen','darkorange']
+    #     marker=['+']*2
+    # elif topdown:
+    #     color=['darkgreen','darkorange']
+    #     marker=['+']*2
+    # else:
+    #     color=['darkgreen']
+    #     marker=['+']
+    # if 'color' in kwargs:
+    #     color = kwargs['color']
+    # if 'marker' in kwargs:
+    #     marker = kwargs['marker']
+    # if 'detrend' in kwargs:
+    #     midlleX = midlleX +  kwargs['detrend']
+           
+    # midlleZ = meshXYZ['Z'].max()/2
+    
+    # idx_mesh_left = meshXYZ['X'] < midlleX
+    # idx_mesh_right = meshXYZ['X'] > midlleX
+    # df['LR'] = None
+    # df['LR'][idx_mesh_left] = 'Left'
+    # df['LR'][idx_mesh_right] = 'Right'
+
+    # idx_mesh_top = meshXYZ['Y'] < midlleZ
+    # idx_mesh_down = meshXYZ['Z'] > midlleZ
+    # df['TopDown'] = None
+    # df['TopDown'][idx_mesh_top] = 'Top'
+    # df['TopDown'][idx_mesh_down] = 'Down'
+
+      
+    # df_ERT['color_plot'] = None
+    # df_ERT['color_plot'][idx_mesh_left]= 'green'
+    # df_ERT['color_plot'][idx_mesh_right]= 'orange'
+
+    # df_ERT['color_plot'] = 'orange'
+
+    # irr_log['color_plot'] = 'orange'
+    # try:
+    #     for idl in id_left:
+    #         irr_log['color_plot'][idl] = 'green'
+    # except:
+    #     pass
+
+
+    # if LR and topdown:
+    #     df_groups = df.groupby(['LR','TopDown']).mean()
+    #     df_groups.T.plot(xlabel='date', ylabel=ylabel, ax=ax,
+    #                      linestyle='-.', marker='+', color=color)
+    # elif LR:
+    #     df_groups = df.groupby(['LR']).mean()
+    #     df_groups.T.plot(xlabel='date', ylabel=ylabel, ax=ax,
+    #                      linestyle='-.', marker='+', color=color)
+    # elif topdown:
+    #     df_groups = df.groupby(['TopDown']).mean()
+    #     df_groups.T.plot(xlabel='date', ylabel=ylabel, ax=ax,
+    #                      linestyle='-.', marker='+', color=color)
+    # else:
+    #     df.T.plot(xlabel='date', ylabel=ylabel, ax=ax,
+    #                      linestyle='-.', marker='+', color=color)
+    pass
 
 def plot_PRD_effect(k_indiv_merged, df, irr_log,
                        ax=None,
@@ -183,97 +290,43 @@ def plot_PRD_effect(k_indiv_merged, df, irr_log,
     elif unit == 'm3/m3':
         ylabel = 'mean SWC (m3/m3)'
 
-    LR = True
-    if 'LR' in kwargs:
-        LR = kwargs['LR']
-    if 'topdown' in kwargs:
-        topdown = kwargs['topdown']
-        
-    
-    if LR and topdown:
-        color=['limegreen', 'darkgreen','bisque', 'darkorange']
-        marker=['+']*4
-    elif LR:
-        color=['darkgreen','darkorange']
-        marker=['+']*2
-    elif topdown:
-        color=['darkgreen','darkorange']
-        marker=['+']*2
-    else:
-        color=['darkgreen']
-        marker=['+']
-    if 'color' in kwargs:
-        color = kwargs['color']
-    if 'marker' in kwargs:
-        marker = kwargs['marker']
 
             
     if ax == None:
         fig, ax = plt.subplots(figsize=(8.8, 4), constrained_layout=True)
 
-    id_left = irr_log[irr_log['where'].str.contains("1")].index.tolist()
-    id_right = irr_log[irr_log['where'].str.contains("8")].index.tolist()
 
-    meshXYZ, midlleX = set_Xlim_LR_from_mesh(k_indiv_merged)
-    midlleZ = meshXYZ['Z'].max()/2
-    
-    idx_mesh_left = meshXYZ['X'] < midlleX
-    idx_mesh_right = meshXYZ['X'] > midlleX
-    df['LR'] = None
-    df['LR'][idx_mesh_left] = 'Left'
-    df['LR'][idx_mesh_right] = 'Right'
+    meshXYZ, _ = set_Xlim_LR_from_mesh(k_indiv_merged)
 
-
-    idx_mesh_top = meshXYZ['Y'] < midlleZ
-    idx_mesh_down = meshXYZ['Z'] > midlleZ
-    df['TopDown'] = None
-    df['TopDown'][idx_mesh_top] = 'Top'
-    df['TopDown'][idx_mesh_down] = 'Down'
-    
-    
-    # df_ERT['color_plot'] = None
-    # df_ERT['color_plot'][idx_mesh_left]= 'green'
-    # df_ERT['color_plot'][idx_mesh_right]= 'orange'
-
-    # df_ERT['color_plot'] = 'orange'
-
-    # irr_log['color_plot'] = 'orange'
-    # try:
-    #     for idl in id_left:
-    #         irr_log['color_plot'][idl] = 'green'
-    # except:
-    #     pass
-
-    if LR and topdown:
-        df_groups = df.groupby(['LR','TopDown']).mean()
-        df_groups.T.plot(xlabel='date', ylabel=ylabel, ax=ax,
-                         linestyle='-.', marker='+', color=color)
-    elif LR:
-        df_groups = df.groupby(['LR']).mean()
-        df_groups.T.plot(xlabel='date', ylabel=ylabel, ax=ax,
-                         linestyle='-.', marker='+', color=color)
-    elif topdown:
-        df_groups = df.groupby(['TopDown']).mean()
-        df_groups.T.plot(xlabel='date', ylabel=ylabel, ax=ax,
-                         linestyle='-.', marker='+', color=color)
-    else:
-        df.T.plot(xlabel='date', ylabel=ylabel, ax=ax,
-                         linestyle='-.', marker='+', color=color)
         
-        
-    # plt.grid(axis='x', color='0.95')
     ax.grid('on', which='major', axis='x',color='0.95' )
     ax.grid('on', which='major', axis='y',color='0.95' )
 
 
-    # ax.fill_between(df_groups.columns,     
-    #                 min(df_groups.min(axis=0)),
-    #                 max(df_groups.max(axis=0)),
-    #                 where=df_groups[df_groups.columns[0]].values>1,
-    #                 color='green', alpha=0.5, transform=ax.get_xaxis_transform())
+    _, split_x_zones = set_Xlim_LMR_from_mesh(k_indiv_merged)
+    
+    if 'detrend' in kwargs:
+        # midlleX = midlleX +  kwargs['detrend']
+        split_x_zones = split_x_zones +  kwargs['detrend']
+        
+    idx_mesh_left = meshXYZ['X'] < split_x_zones
+    idx_mesh_midlle = (meshXYZ['X'] < 2*split_x_zones) & (meshXYZ['X'] > split_x_zones) 
+    idx_mesh_right = meshXYZ['X'] > 2*split_x_zones
+    df['Zone'] = None
+    df['Zone'][idx_mesh_left] = 'Left'
+    df['Zone'][idx_mesh_midlle] = 'Middle'
+    df['Zone'][idx_mesh_right] = 'Right'
+    
+    
+    color=['darkgreen', 'grey','darkorange']
+    df_groups = df.groupby(['Zone']).mean()
+    
+    df_groups = df_groups.T   
+    df_groups.index = pd.to_datetime(df_groups.index) #, format ='%Y-%m-%d')
 
-    # ax.fill_between(df_groups.columns, 0, 1, where=y > threshold,
-    #                 color='white', alpha=0.5, transform=ax.get_xaxis_transform())
+
+    df_groups.plot(xlabel='date', ylabel=ylabel, ax=ax,
+                     linestyle='-.', marker='+', color=color)
 
     return ax
 
@@ -301,9 +354,9 @@ def plot_PRD_effect_MALM_diff(k_indiv_merged, df_MALM, ax=None,
                 tuple_cols_2_select_stem_diff.append(tc[0])
 
     soil_inject_df_MALM_diff = df_MALM[tuple_cols_2_select_soil_diff]
-    soil_inject_df_MALM_diff['LR'] = df_MALM['LR']
+    soil_inject_df_MALM_diff['LMR'] = df_MALM['LMR']
 
-    df_groups_soil_inj = soil_inject_df_MALM_diff.groupby(['LR']).mean()
+    df_groups_soil_inj = soil_inject_df_MALM_diff.groupby(['LMR']).mean()
     df_groups_soil_inj.T.droplevel(level=[1, 2]).plot(xlabel='date', ylabel=ylabel, ax=ax,
                                                       linestyle=':',
                                                       marker='o',
@@ -311,9 +364,9 @@ def plot_PRD_effect_MALM_diff(k_indiv_merged, df_MALM, ax=None,
                                                       color=['grey', 'grey'])
 
     stem_inject_df_MALM_diff = df_MALM[tuple_cols_2_select_stem_diff]
-    stem_inject_df_MALM_diff['LR'] = df_MALM['LR']
+    stem_inject_df_MALM_diff['LMR'] = df_MALM['LMR']
 
-    df_groups_stem_inj = stem_inject_df_MALM_diff.groupby(['LR']).mean()
+    df_groups_stem_inj = stem_inject_df_MALM_diff.groupby(['LMR']).mean()
     df_groups_stem_inj.T.droplevel(level=[1, 2]).plot(xlabel='date', ylabel=ylabel, ax=ax,
                                                       linestyle='--',
                                                       marker='v',
@@ -349,8 +402,19 @@ def plot_PRD_effect_MALM(k_indiv_merged, df_MALM, ax=None,
 
     if ax == None:
         fig, ax = plt.subplots(figsize=(8.8, 4), constrained_layout=True)
-    _, midlleX = set_Xlim_LR_from_mesh(k_indiv_merged)
+        
+        
+    
+    # _, midlleX = set_Xlim_LR_from_mesh(k_indiv_merged)
+    # if 'detrend' in kwargs:
+    #     midlleX = midlleX +  kwargs['detrend']
+    
+    _, split_x_zones = set_Xlim_LMR_from_mesh(k_indiv_merged)
 
+    if 'detrend' in kwargs:
+        # midlleX = midlleX +  kwargs['detrend']
+        split_x_zones = split_x_zones +  kwargs['detrend']
+        
     ylabel = r'R ($\Omega$)'
     if 'ylabel' in kwargs:
         ylabel = kwargs['ylabel']
@@ -359,14 +423,20 @@ def plot_PRD_effect_MALM(k_indiv_merged, df_MALM, ax=None,
     elecsMALM = elecsMALM.drop(index=[64, 70, 71], axis=0)
     xelecs = elecsMALM['x']
 
-    idx_elecs_left = xelecs < midlleX
-    idx_elecs_right = xelecs > midlleX
 
-    LR = ['Left']*len(df_MALM)
+    idx_elecs_left = xelecs.values < split_x_zones
+    idx_elecs_middle = (xelecs.values < 2*split_x_zones) & (xelecs.values > split_x_zones)
+    idx_elecs_right = xelecs > 2*split_x_zones
+    # np.sum(idx_elecs_right)
+    
+    LMR = ['Left']*len(df_MALM)
+    for i, right in enumerate(idx_elecs_middle):
+        if right:
+            LMR[i] = 'Middle'
     for i, right in enumerate(idx_elecs_right):
         if right:
-            LR[i] = 'Right'
-    df_MALM['LR'] = LR
+            LMR[i] = 'Right'
+    df_MALM['LMR'] = LMR
 
     if len(idx_elecs_left) == len(df_MALM):
         # if df_MALM.columns.ndims
@@ -381,32 +451,36 @@ def plot_PRD_effect_MALM(k_indiv_merged, df_MALM, ax=None,
                     tuple_cols_2_select_stem.append(tc[0])
 
             soil_inject_df_MALM = df_MALM[tuple_cols_2_select_soil]
-            df_groups_soil_inj = soil_inject_df_MALM.groupby(['LR']).mean()
+            df_groups_soil_inj = soil_inject_df_MALM.groupby(['LMR']).mean()
             df_groups_soil_inj.T.droplevel(level=1).plot(xlabel='date', ylabel=ylabel, ax=ax,
                                                          linestyle=':',
                                                          marker='o',
                                                          label='soil inj.',
-                                                         color=['grey', 'grey'])
+                                                         color=['red', 'grey', 'blue'],
+                                                         alpha=0.3,
+                                                         )
 
             stem_inject_df_MALM = df_MALM[tuple_cols_2_select_stem]
-            df_groups_stem_inj = stem_inject_df_MALM.groupby(['LR']).mean()
+            df_groups_stem_inj = stem_inject_df_MALM.groupby(['LMR']).mean()
             df_groups_stem_inj.T.droplevel(level=1).plot(xlabel='date', ylabel=ylabel, ax=ax,
                                                          linestyle='--',
                                                          marker='v',
                                                          label='stem inj.',
-                                                         color=['orange', 'green'])
+                                                         color=['red', 'grey', 'blue'])
         except:
-            df_MALM_groupLR = df_MALM.groupby(['LR']).mean()
+            df_MALM_groupLR = df_MALM.groupby(['LMR']).mean()
             df_MALM_groupLR.T.plot(xlabel='date', ylabel=ylabel, ax=ax,
                                    linestyle='--',
                                    marker='v',
                                    label='stem inj.',
-                                   color=['orange', 'green'])
+                                   color=['orange', 'green', 'blue'])
 
     else:
         # raise ValueError('Impossible to split the seq')
         print('Impossible to split the seq')
 
+
+    # plt.show()
     return ax
 
 
@@ -418,70 +492,61 @@ def plot_timeline(ERT_log, irr_log, ax=None,
     if 'dropMALM' in kwargs:
         dates_ERT.drop(ERT_log[ERT_log['method'] ==
                        'MALM'].index.to_list(), axis=0, inplace=True)
-        # names = ['ERT + MALM']*len(dates_ERT)
         names = list(np.arange(0, len(dates_ERT)))
         names_str = list(map(str, names))
 
     dates_irr = irr_log['datetime']
     ml_irr = irr_log['quantity (mL)']
 
-    id_left = irr_log[irr_log['where'].str.contains("1")].index.tolist()
-    id_right = irr_log[irr_log['where'].str.contains("8")].index.tolist()
+    id_left = irr_log[irr_log['where']=='H1;H2'].index.tolist()
+    id_right = irr_log[irr_log['where']=='H7;H8'].index.tolist()
+    id_left4h = irr_log[irr_log['where'].str.contains("H1;H2;H3;H4")].index.tolist()
+    id_right4h = irr_log[irr_log['where'].str.contains("H5;H6;H7;H8")].index.tolist()
+    id_all = irr_log[irr_log['where'].str.contains("All")].index.tolist()
 
     ml_irr_signed = ml_irr
-    # ml_irr_signed[id_left] = ml_irr[id_left]*-1
 
-    # Choose some nice levels
-    # levels = np.tile([-5, 5, -3, 3, -1, 1],
-    #                  int(np.ceil(len(dates)/6)))[:len(dates)]
-
-    # Create figure and plot a stem plot with the date
     if ax == None:
         fig, ax = plt.subplots(figsize=(8.8, 4), constrained_layout=True)
-    # ax.set(title="Timeline rhizotron experiment")
 
     levels_irr = np.tile(ml_irr_signed.to_list(),
                          int(np.ceil(len(dates_irr))))[:len(dates_irr)]
     levels_ERT = np.tile([1],
                          int(np.ceil(len(dates_ERT))))[:len(dates_ERT)]
 
-    # markerline_irr, stemline_irr, baseline_irr = ax.stem(dates_irr, levels_irr,
-    #                                          linefmt="--", basefmt="k-")
+    for i, datesi in enumerate(dates_irr):
+        ax.axvline(x = datesi, color = 'k', alpha=0.5,
+                    linestyle='dotted')
+        ax.text(datesi, 1, 
+                'C' + str(irr_log['PRD Cycle nb'].iloc[i]),
+                 size=12, rotation=45.,
+                 ha="right", va="top",
+                 bbox=dict(boxstyle="square",
+                            ec=(1., 0.5, 0.5),
+                            fc=(1., 0.8, 0.8),
+                            )
+              )
 
-    # c = ['orange']*len(dates_irr)
 
-    irr_log['color_plot'] = 'orange'
+
+    irr_log['color_plot'] = 'darkorange'
     try:
         for idl in id_left:
-            irr_log['color_plot'][idl] = 'green'
+            irr_log['color_plot'][idl] = 'darkgreen'
+        for idl in id_left4h:
+            irr_log['color_plot'][idl] = 'lightgreen'
+        for idl in id_right4h:
+            irr_log['color_plot'][idl] = 'peachpuff'    
+        for idl in id_all:
+            irr_log['color_plot'][idl] = 'black'
+
     except:
         pass
 
     ax.bar(dates_irr, levels_irr, color=irr_log['color_plot'])
-    # markerline_ERT, stemline_ERT, baseline_ERT = ax.stem(dates_ERT, levels_ERT,
-    #                                          linefmt="C4-", basefmt="k-")
-
-    ax.scatter(dates_ERT, levels_ERT, marker='v', color='black')
-
-    # plt.setp(markerline, mec="k", mfc="w", zorder=3)
-
-    # Shift the markers to the baseline by replacing the y-data by zeros.
-    # markerline.set_ydata(np.zeros(len(dates)))
-
-    # annotate lines
-    vert = np.array(['top', 'bottom'])[(levels_ERT > 0).astype(int)]
-    for d, l, r, va in zip(dates_ERT, levels_ERT, names_str, vert):
-        ax.annotate(r, xy=(d, l), xytext=(-1, np.sign(l)*3),
-                    textcoords="offset points", va=va, ha="right", rotation=25)
-
-    # # remove y axis and spines
-    # ax.get_yaxis().set_visible(False)
-    # for spine in ["left", "top", "right"]:
-    #     ax.spines[spine].set_visible(False)
     ax.set_ylabel('Input water (mL)')
     ax.set_xlabel('Date')
-
-    # ax.margins(y=0.1)
+    
     if show:
         plt.show()
     return ax
@@ -543,6 +608,7 @@ def load_ERT_survey_log(csv2read=('/home/ben/Documents/GitHub/BenjMy/' +
                         endDate=None,
                         cycles=[-99]
                         ):
+    
     survey_log = pd.read_csv(csv2read,
                              decimal=',',
                              header='infer'
@@ -724,15 +790,16 @@ def anisotropy(k_MALM):
     eucl_dist_A_MN_bary = []
 
     for quad_nb in range(len(seqMALM)):
+        # print(quad_nb)
 
         # find position of quadripoles
         # -----------------------------
         pi_EB = elecsMALM[['x', 'y', 'z']].iloc[int(
-            seqMALM.iloc[quad_nb]['b']-1)].to_numpy()
+            seqMALM.iloc[quad_nb]['b'])-1].to_numpy()
         pi_EN = elecsMALM[['x', 'y', 'z']].iloc[int(
-            seqMALM.iloc[quad_nb]['n']-1)].to_numpy()
+            seqMALM.iloc[quad_nb]['n'])-1].to_numpy()
         pi_EM = elecsMALM[['x', 'y', 'z']].iloc[int(
-            seqMALM.iloc[quad_nb]['m']-1)].to_numpy()
+            seqMALM.iloc[quad_nb]['m'])-1].to_numpy()
 
         # Distance between electrodes
         # -----------------------------
@@ -1070,9 +1137,9 @@ def petro_plots(scalesurvey,k_indiv_merged,df_SWC,irr_log, ax=None):
 # %%
 
 
-def load_irr_log_drive(startDate=None,
-                       endDate=None,
-                       cycles=[None]):
+def load_irr_log(startDate=None,
+                endDate=None,
+                cycles=[None]):
     # sheet_id = '15AvYhQywK04VDfoBbAnqXP_YJeBmIwi-AxYzuRNjYdo'
     # sheet_name = ['2nd_run']
     # data = []
@@ -1088,7 +1155,9 @@ def load_irr_log_drive(startDate=None,
 
     irr_log['datetime_tmp'] = irr_log['date'] + ' ' + irr_log['start']
     irr_log['datetime'] = pd.to_datetime(
-        irr_log['datetime_tmp'], format='%d/%m/%Y %H:%M')
+                                            irr_log['datetime_tmp'], 
+                                            format='%d/%m/%Y %H:%M'
+                                        )
 
     if startDate is not None:
         irr_log = select_from_dates(irr_log, startDate, endDate)
@@ -1096,7 +1165,7 @@ def load_irr_log_drive(startDate=None,
     if type(cycles) == int:
         cycles = [cycles]
     if cycles[0] is not None:
-        cycles.insert(0, min(cycles)-1)
+        # cycles.insert(0, min(cycles)-1)
         irr_log = select_from_cycles(irr_log, cycles=cycles)
 
     return irr_log

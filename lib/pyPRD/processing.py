@@ -79,6 +79,8 @@ def prepare_icsd(path, filename, k_ERT, parallel=False,
                  **kwargs):
     ''' Prepare icsd files '''
     
+    
+
     if os.path.exists(os.path.join(path, 
                                    filename, 
                                    'VRTeCoord.txt')):
@@ -92,13 +94,21 @@ def prepare_icsd(path, filename, k_ERT, parallel=False,
                                     )
             [k_MALM, imin, R_obs, nodes, R_icsd] = outMALM
             k_MALM.sequence = k_MALM.sequence.to_numpy()
+            
+            # if 'b' in kwargs:
+                # k_MALM.saveProject(path + filename + '_return' + str(kwargs['b']) + 'backup')
+            # else:
             k_MALM.saveProject(path + filename + 'backup')   
 
         else:
             print('reload file from *.resipy backup')
             k_MALM = Project(dirname=os.path.join(path, filename), typ='R3t')
-            k_MALM.loadProject(os.path.join(path, filename  + "backup.resipy"))
             
+            # if 'b' in kwargs:
+            #     k_MALM.loadProject(os.path.join(path, filename  + '_return' + str(kwargs['b']) + "backup.resipy"))
+            # else:
+            k_MALM.loadProject(os.path.join(path, filename  + "backup.resipy"))
+
             imin, nodes, grid = create_source_grid(k_MALM.mesh.df, k_MALM, **kwargs)
             
             outMALM = [k_MALM, imin, None , nodes, None]
@@ -481,10 +491,10 @@ def invert_MALM(path,pareto=False,show=False,**kwargs):
     
     if show:
         sol, ax, f = icsd.invert(pareto=pareto,show=show,**kwargs) 
-        return sol, ax, f
+        return icsd, sol, ax, f
     else:
         sol = icsd.invert(pareto=pareto,**kwargs) 
-        return sol
+        return icsd, sol
         
     
     
@@ -600,7 +610,7 @@ def filter_sequence(k_MALM,**kwargs):
     # set default values
     a=72
     b=65
-    m=71
+    m=None
     
     if 'a' in kwargs:
         a = kwargs['a']
@@ -630,7 +640,7 @@ def filter_sequence_rec(k_MALM):
     Robs = df_new['resist']
     
     return Robs
-  
+
     
 def create_MALM_project(path,filename,**kwargs):
     
@@ -858,7 +868,7 @@ def create_source_grid(mesh, k, nVRTe_rows=5, nVRTe_cols=4, show=False, **kwargs
     stri = ''
     for i in range(len(grid)+81):
         # if (i>90+72 & i<90+81):
-        print(i)
+        # print(i)
         if i==(90+72):
             stri += str(i+1)
         else:
@@ -974,7 +984,7 @@ def invert_ERT_TL(path='.',
 
 
 def plot_scatter_MALM(imaging_path,df_MALM,k,
-                        ERT_log, 
+                        ERT_log, f_MALM,
                         **kwargs):
         ''' Loop over MALM files and plot '''
         # df = pd.concat(R_obs_stck, axis=1, keys=[s.name for s in R_obs_stck])
@@ -986,7 +996,7 @@ def plot_scatter_MALM(imaging_path,df_MALM,k,
         yelecs = elecsMALM['z']
                 
         for i, f in enumerate(df_MALM.columns[:-1]):
-            
+           
             fig, ax = plt.subplots(
                                    constrained_layout=False)
     
@@ -1004,8 +1014,8 @@ def plot_scatter_MALM(imaging_path,df_MALM,k,
                 cbar.set_label(r'R ($\Omega$)') #, rotation=270)
                 
             # Loop for annotation of all points
-            for i,j in enumerate(elecsMALM['label']):
-                plt.annotate(j,(xelecs.iloc[i],yelecs.iloc[i]))
+            for i_label,j_label in enumerate(elecsMALM['label']):
+                plt.annotate(j_label,(xelecs.iloc[i_label],yelecs.iloc[i_label]))
     
             ax.set_xlabel('x (m)')
             ax.set_ylabel('y (m)')
@@ -1014,8 +1024,7 @@ def plot_scatter_MALM(imaging_path,df_MALM,k,
             
             # with open(imaging_path + str(f[0]) + '.obj', 'wb') as file:
             #     pickle.dump((fig, ax), file)
-    
-            plt.savefig(imaging_path + str(f[0]) + '.png',
+            plt.savefig(imaging_path + f_MALM[i] + '/' + str(f[0]) + '.png',
                         dpi=450)
             
         return df_MALM
@@ -1107,7 +1116,7 @@ def plot_scatter_MALM_diff(imaging_path,df_MALM,k_indiv_merged,
         
                     ax.set_title((diff_keyname,subkey_name))
                     
-                    plt.savefig(imaging_path+ f + '_diff.png',
+                    plt.savefig(imaging_path + f + '/' + f + '_diff.png',
                                 dpi=450)
                     # with open(imaging_path + f + '_diff' + '.obj', 'wb') as file:
                     #     pickle.dump((fig, ax), file)
@@ -1168,7 +1177,7 @@ def plot_scatter_MALM_diff_stem_soil(imaging_path,df_MALM,k_indiv_merged,
             ax.set_title(lgd)
             lgd += 'Stem-Soil (Ohm)'
             
-            plt.savefig(imaging_path + f + '_SS_diff.png',
+            plt.savefig(imaging_path + f +'/' + f + '_SS_diff.png',
                         dpi=450)
             # with open(imaging_path + f + '_SS_diff' + '.obj', 'wb') as file:
             #     pickle.dump((fig, ax), file)
@@ -1289,6 +1298,7 @@ def plot_ERT(k, vmin=0, vmax=300, attr="Resistivity(log10)", index=0, path='',
                   ylim=[mesh['Y'].min(),mesh['Y'].max()], 
                   zlim=[mesh['Z'].min(),mesh['Z'].max()],  
                   scalar_bar_args=sargs,
+                  pvdelaunay3d=True,
                   **kwargs)
     
     
