@@ -118,7 +118,7 @@ python invert_synth.py -cycle 7 -startD 29/6/2022,13:50 -endD 30/6/2022,14:50 -r
 
 Plot papers ERT PRD effects + Archie
 ============================
-python invert.py -cycle 6 7 8 -TL 0 -icsd 1 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -petro 1
+python invert.py -cycle 6 7 8 -TL 0 -icsd 0 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -petro 1
 
 
 TEST

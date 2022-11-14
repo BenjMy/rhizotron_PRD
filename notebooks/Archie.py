@@ -46,6 +46,8 @@ from scipy.optimize import least_squares
 
 # ρ=aρflϕ−mS−n
 
+# rho = rFluid * phi^(-m) S^(-n)
+# S = (rho/rFluid/phi^-m)^(-1/n)
 def calc_rho(params, sat, rho, porosity, rho_sat):
     m, n = params
     # rho_calc = rho_sat * (1 / (sat ** n))

@@ -7,6 +7,6 @@ date,start,end,type,where,outflow,quantity (mL),PRD Cycle nb,water cond. (microS
 10/06/2022,00:00,00:01,"""safety"" irr",All,No,60,3,,nutrient sol
 15/06/2022,17:25,17:45,PRD irr,H1;H2,No,350,4,,nutrient sol
 22/06/2022,16:45,16:55,PRD irr,H7;H8,No,375,5,2470,nutrient sol
-29/06/2022,13:45,13:57,PRD irr,H1;H2,No,386.15,6,,nutrient sol
+29/06/2022,13:45,13:57,PRD irr,H1;H2,No,"386,15",6,,nutrient sol
 05/07/2022,18:10,18:25,PRD irr,H7;H8,No,431,7,,nutrient sol
 11/07/2022,13:15,13:25,PRD irr,H1;H2,No,431,8,,nutrient sol

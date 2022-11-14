@@ -26,7 +26,7 @@ def get_cmd():
     # period.add_argument('-cycle', type=list, help='cycle to analyse', default=[None], required=False) #[0,1,2,3,4,5]
     period.add_argument('-cycle', '--cycle', nargs='+',
                         # help='list of cycle', type=int, default=[3,4,5,6,7,8], required=False)
-                        help='list of cycle', type=int, default=[7,8], required=False)
+                        help='list of cycle', type=int, default=[3,4,5,6,7,8], required=False)
                         # help='list of cycle', type=int, default=[6,7], required=False)
                         # help='list of cycle', type=int, default=-99, required=False)
     # period.add_argument('-cycle', '--cycle', nargs='+',
@@ -59,6 +59,9 @@ def get_cmd():
                                help='pareto', default=0, required=False)
     process_param.add_argument('-wr', type=float,
                                help='reg. weight', default=1, required=False)
+    
+    process_param.add_argument('-anisotropy', type=float,
+                               help='anisotropy procesing', default=0, required=False)
     args = parse.parse_args()
     
     
@@ -198,21 +201,39 @@ def run_ERT_ind(
     ax0 = surveyPRD.plot_timeline(ERT_log, irr_log, ax=ax[0], dropMALM=True)
     ax = surveyPRD.plot_PRD_effect_ER(
         k_indiv_merged, df_ERT, irr_log, ax=ax[1],**kwargs)
+    # ax.xaxis.set_major_locator(mdates.DayLocator(interval=2))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%B %d'))
     plt.savefig(imaging_path+'inversionERT/' + 'PRDeffect' + str([*args.cycle]),
                 dpi=450)
     
     if args.petro:
-        sw_conductivity = 594*(1e-6/1e-2)
-        rFluid = 1/sw_conductivity
+                
+        from datetime import datetime
+        tmin = datetime.strptime('08/06/2022 12:29:00', '%d/%m/%Y %H:%M:%S')
+        tmax = datetime.strptime('15/06/2022 16:19:00', '%d/%m/%Y %H:%M:%S')
+
         porosity = 0.55
         df_SWC = df_ERT.copy()
-        for cols in list(df_ERT.columns):
+        for cols in list(df_ERT.columns[:-1]):
+            
+            sw_conductivity = 2470*(1e-6/1e-2)
+            if (tmin < cols) & (tmax > cols):
+                sw_conductivity = 2000*(1e-6/1e-2)
+                print('Cycle 3 tap water detected - change water conductivity')
+            rFluid = 1/sw_conductivity
+
             if type(cols)==str:
                 pass
             else:
-                df_SWC[cols] = surveyPRD.Archie_rho2sat(df_ERT[cols].to_numpy(),
-                                                          rFluid, porosity, 
-                                                          a=1.0, m=1.9, n=1.2)
+                ERi = 1/(df_ERT[cols]*1e-3) # Conductivity(mS/m)
+                # print(cols)
+                # print(ERi.mean())
+                # df_SWC[cols].mean()
+                # min(ERi)
+                df_SWC[cols] = surveyPRD.Archie_rho2sat(ERi,
+                                                        rFluid, porosity, 
+                                                        a=1.0, m=1.9, n=1.2)
+                df_SWC[cols] = df_SWC[cols]*porosity
         df_SWC.to_csv(imaging_path+'inversionERT/dfSWC' + str([*args.cycle])+'.csv')
 
         
@@ -466,48 +487,49 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
 
         
     #%% Anisotropy 
-    k_MALM_anisotropy = []
-    m0_anisotropy = []
-    for i, f in enumerate(selected_files_MALM):
-        if '8returns' in f:
-            b_return = [1,4,8,17,20,24,33,36,40,49,52,64]
-            for k in range(len(b_return)):
-                print('*'*24)
-                print(k,f)
-                print('*'*24)
-                fnew = f.split('.csv')[0] + '_B'+ str(b_return[k])
-                background_ERT_time = int(f.split('_')[2])
-                for j, n in enumerate(ERT_log['Name'][ERT_log['method'] == 'ERT']):
-                    if 'PRD_ERT_' + str(background_ERT_time) in n:
-                        index_ERT_backgrd = j
-                outMALM = proc.prepare_icsd(imaging_path + inversionPathMALM,
-                                                fnew,
-                                                k_indiv_merged[index_ERT_backgrd],
-                                                reprocessed=bool(args.reprocessed),
-                                                nVRTe_cols=6*2+1, nVRTe_rows=4*2+1,
-                                                filter_seq_rec=args.filter_seq_rec,
-                                                filter_seq=args.filter_seq,
-                                                b=b_return[k],
-                                                reduce2d=True,
-                                                )
-                k_MALM_anisotropy.append(outMALM[0])
-                
-                m0i,ax,fig = proc.m0_MALM(imaging_path + inversionPathMALM + fnew,
-                                       method_m0='F1', typ=args.dim,
-                                       show=True
-                                       )
-                plt.close()
-                fig.savefig(os.path.join(imaging_path,inversionPathMALM, fnew,'m0' + '_breturn' + str(b_return[k]) + '.png')
-                            , dpi=300)
-                m0_anisotropy.append(m0i)
-                # pl = proc.plot_m0_MALM(k_MALM_anisotropy[k], m0_anisotropy[k], pl=None, ext=['png'], show=False,
-                #                   index=0)
-                
-            # [_, imin, R_obs, nodes, R_icsd] = outMALM
-            plt.close('all')
-        
-            # plt.plot(R_obs)
-            # plt.plot(R_icsd[:,0])
+    if bool(args.anisotropy):
+        k_MALM_anisotropy = []
+        m0_anisotropy = []
+        for i, f in enumerate(selected_files_MALM):
+            if '8returns' in f:
+                b_return = [1,4,8,17,20,24,33,36,40,49,52,64]
+                for k in range(len(b_return)):
+                    print('*'*24)
+                    print(k,f)
+                    print('*'*24)
+                    fnew = f.split('.csv')[0] + '_B'+ str(b_return[k])
+                    background_ERT_time = int(f.split('_')[2])
+                    for j, n in enumerate(ERT_log['Name'][ERT_log['method'] == 'ERT']):
+                        if 'PRD_ERT_' + str(background_ERT_time) in n:
+                            index_ERT_backgrd = j
+                    outMALM = proc.prepare_icsd(imaging_path + inversionPathMALM,
+                                                    fnew,
+                                                    k_indiv_merged[index_ERT_backgrd],
+                                                    reprocessed=bool(args.reprocessed),
+                                                    nVRTe_cols=6*2+1, nVRTe_rows=4*2+1,
+                                                    filter_seq_rec=args.filter_seq_rec,
+                                                    filter_seq=args.filter_seq,
+                                                    b=b_return[k],
+                                                    reduce2d=True,
+                                                    )
+                    k_MALM_anisotropy.append(outMALM[0])
+                    
+                    m0i,ax,fig = proc.m0_MALM(imaging_path + inversionPathMALM + fnew,
+                                           method_m0='F1', typ=args.dim,
+                                           show=True
+                                           )
+                    plt.close()
+                    fig.savefig(os.path.join(imaging_path,inversionPathMALM, fnew,'m0' + '_breturn' + str(b_return[k]) + '.png')
+                                , dpi=300)
+                    m0_anisotropy.append(m0i)
+                    # pl = proc.plot_m0_MALM(k_MALM_anisotropy[k], m0_anisotropy[k], pl=None, ext=['png'], show=False,
+                    #                   index=0)
+                    
+                # [_, imin, R_obs, nodes, R_icsd] = outMALM
+                plt.close('all')
+            
+                # plt.plot(R_obs)
+                # plt.plot(R_icsd[:,0])
 
     #%% 
     
@@ -680,13 +702,13 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
         
         
         nrows = 3
-        ncol = 2
+        ncols = 2
         if len(f_names)>6:
             nrows = 3
-            ncol = 3
+            ncols = 3
         if len(f_names)>9:
             nrows = 4
-            ncol = 4
+            ncols = 4
         if len(f_names)>16:
             ncols = 5
             nrows = 4

@@ -179,7 +179,7 @@ def plot_PRD_effect_icsd(k_indiv_merged, vrte_in_mesh,
 def plot_PRD_effect_SWC(k_indiv_merged, df_SWC, irr_log,
                        ax=None,
                        hours_interval=10,
-                       unit='m3/m3',
+                       unit='$m^{3}/m^{3}$',
                        **kwargs,
                        ):
     
@@ -284,11 +284,11 @@ def plot_PRD_effect(k_indiv_merged, df, irr_log,
                        topdown=False,
                        **kwargs):
 
-    ylabel = 'mean Conductivity (mS/m)'
+    ylabel = 'mean \n Conductivity (mS/m)'
     if unit == 'Ohm.m':
         ylabel = 'mean Resistivity (Ohm.m)'
-    elif unit == 'm3/m3':
-        ylabel = 'mean SWC (m3/m3)'
+    elif unit == '$m^{3}/m^{3}$':
+        ylabel = 'mean SWC ($m^{3}/m^{3}$)'
 
 
             
@@ -326,7 +326,7 @@ def plot_PRD_effect(k_indiv_merged, df, irr_log,
 
 
     df_groups.plot(xlabel='date', ylabel=ylabel, ax=ax,
-                     linestyle='-.', marker='+', color=color)
+                     linestyle='--', marker='v', color=color)
 
     return ax
 
@@ -519,9 +519,9 @@ def plot_timeline(ERT_log, irr_log, ax=None,
                     linestyle='dotted')
         ax.text(datesi, 1, 
                 'C' + str(irr_log['PRD Cycle nb'].iloc[i]),
-                 size=12, rotation=45.,
-                 ha="right", va="top",
-                 bbox=dict(boxstyle="square",
+                  size=12, rotation=45.,
+                  ha="right", va="top",
+                  bbox=dict(boxstyle="square",
                             ec=(1., 0.5, 0.5),
                             fc=(1., 0.8, 0.8),
                             )
@@ -579,6 +579,7 @@ def add2df_ERT(kresipy, selected_files_ERT, ERT_log, TL_flag=False):
     for i, f in enumerate(selected_files_ERT):
         date_f = ERT_log['datetime'].loc[ERT_log[ERT_log['Name'] == f].index.to_list()[
             0]]
+        kresipy[i].meshResults[0].df['Conductivity(mS/m)']
         kresipy[i].meshResults[0].df['Conductivity(mS/m)']
         if len(df_ERT) == 0:
             df_ERT = pd.DataFrame(
@@ -1066,7 +1067,7 @@ def plot_anisotropy_polar(df_anisotropy, eucl_dist_A_sol, angle_A_sol, path,
     return
 
 
-def petro_plots(scalesurvey,k_indiv_merged,df_SWC,irr_log, ax=None):
+def petro_plot(scalesurvey,k_indiv_merged,df_SWC,irr_log, ax=None):
     
     if ax == None:
         fig, ax = plt.subplots(figsize=(10, 3))
@@ -1076,8 +1077,6 @@ def petro_plots(scalesurvey,k_indiv_merged,df_SWC,irr_log, ax=None):
     ax.set_title('SWC variations')
     plt.savefig('../figures/SWC_variations.png', dpi=400)
     
-    
-    
     fig, ax = plt.subplots(1,sharex=True)
     
     color = 'tab:red'
@@ -1087,50 +1086,12 @@ def petro_plots(scalesurvey,k_indiv_merged,df_SWC,irr_log, ax=None):
     
     color = 'tab:green'
     ax2.set_ylabel('Y2-axis', color = color)
-            
-    # fig, axs = plt.subplots(3,sharex=False)
-    
-    # ax_irr = surveyPRD.plot_timeline(ERT_log,irr_log,ax=axs[0],dropMALM=True)
     ax_scale = plot_weight_dynamic(scalesurvey,ax=ax, color='red')
     
     ax_SWC = plot_PRD_effect_SWC(k_indiv_merged,df_SWC,irr_log=irr_log,ax=ax2)
     ax.set_title('ER VS weight data')
     plt.savefig('../figures/SWC_weight_LR.png', dpi=400)
     
-    #%%
-    
-    fig, ax = plt.subplots(1,sharex=True)
-    color = 'tab:red'
-    ax.set_xlabel('X-axis')
-    ax.set_ylabel('Y1-axis', color = color)
-    ax2 = ax.twinx()
-    color = 'tab:green'
-    ax2.set_ylabel('Y2-axis', color = color)
-            
-    ax_scale = plot_weight_dynamic(scalesurvey,ax=ax, color='red')
-    
-    ax_SWC = plot_PRD_effect_SWC(k_indiv_merged,df_SWC,irr_log=irr_log,ax=ax2,
-                                           LR=False, topdown=True)
-    ax.set_title('ER VS weight data')
-    plt.savefig('../figures/SWC_weight_topdown.png', dpi=400)
-    
-    
-    #%%
-    
-    fig, ax = plt.subplots(1,sharex=True)
-    color = 'tab:red'
-    ax.set_xlabel('X-axis')
-    ax.set_ylabel('Y1-axis', color = color)
-    ax2 = ax.twinx()
-    color = 'tab:green'
-    ax2.set_ylabel('Y2-axis', color = color)
-            
-    ax_scale = plot_weight_dynamic(scalesurvey,ax=ax, color='red')
-    
-    ax_SWC = plot_PRD_effect_SWC(k_indiv_merged,df_SWC,irr_log=irr_log,ax=ax2,
-                                           LR=False, topdown=True)
-    ax.set_title('ER VS weight data')
-    plt.savefig('../figures/SWC_weight_mean.png', dpi=400)
     
     pass
 
@@ -1271,7 +1232,9 @@ def Archie_rho2sat(rho, rFluid, porosity, a=1.0, m=2.0, n=2.0):
     -------
     𝑆𝑤 : water saturation
     '''
-    return (rho/rFluid/porosity**(-m))**((-1/n))
+    # S = (rho/rFluid/phi^-m)^(-1/n)
+    # return (rho/rFluid/(porosity**(-m)))**(-1/n)
+    return (rho/rFluid/(porosity**-m))**(-1/n)
 
 # Plot irrigation schedule (see Legnaro plot)
 
