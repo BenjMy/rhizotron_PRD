@@ -2,7 +2,7 @@ Anisotropy analysis
 ======================
 
 
-python invert.py -cycle 6 7 8 -TL 0 -icsd 1 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5
+python invert.py -cycle 6 7 8 -TL 0 -icsd 1 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -anisotropy 1
 
 
 All cycles ERT analysis
@@ -119,6 +119,16 @@ python invert_synth.py -cycle 7 -startD 29/6/2022,13:50 -endD 30/6/2022,14:50 -r
 Plot papers ERT PRD effects + Archie
 ============================
 python invert.py -cycle 6 7 8 -TL 0 -icsd 0 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -petro 1
+
+python invert.py -cycle 0 1 2 3 4 5 6 7 8 -TL 0 -icsd 1 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -petro 1 -anisotropy 0 -wr 10
+
+python invert.py -cycle 3 4 5 6 7 8 -TL 0 -icsd 1 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -petro 1
+
+
+python invert.py -cycle -99 -startD 29/6/2022,09:29 -endD  5/7/2022,18:26 -TL 1 -TLreg 1 -icsd 1 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -petro 1 -wr 1
+python invert.py -cycle -99 -startD 29/6/2022,09:29 -endD  5/7/2022,18:26 -TL 1 -TLreg 1 -icsd 1 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -petro 1 -wr 10
+
+
 
 
 TEST

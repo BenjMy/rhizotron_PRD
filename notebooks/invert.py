@@ -26,7 +26,8 @@ def get_cmd():
     # period.add_argument('-cycle', type=list, help='cycle to analyse', default=[None], required=False) #[0,1,2,3,4,5]
     period.add_argument('-cycle', '--cycle', nargs='+',
                         # help='list of cycle', type=int, default=[3,4,5,6,7,8], required=False)
-                        help='list of cycle', type=int, default=[3,4,5,6,7,8], required=False)
+                        help='list of cycle', type=int, default=[0,1,2,3,4,5,6,7,8], required=False)
+                        # help='list of cycle', type=int, default=[3,4,5,6,7,8], required=False)
                         # help='list of cycle', type=int, default=[6,7], required=False)
                         # help='list of cycle', type=int, default=-99, required=False)
     # period.add_argument('-cycle', '--cycle', nargs='+',
@@ -83,8 +84,11 @@ def get_cmd():
     # 13/5/2022	16:25
     # 12/7/2022	12:50
 
-    # args.startD = '13/5/2022,16:25'
-    # args.endD = '12/7/2022,12:50'
+    # args.startD = '29/6/2022,09:29'
+    # args.endD = '5/7/2022,16:35'
+    
+       
+    
     
     return(args)
 
@@ -350,6 +354,8 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
     ax = fig.add_subplot()
        
     for i, f in enumerate(selected_files_MALM):
+        if '8returns' in f:
+            continue
         background_ERT_time = int(f.split('_')[2])
         for i, n in enumerate(ERT_log['Name'][ERT_log['method'] == 'ERT']):
             if 'PRD_ERT_' + str(background_ERT_time) in n:
@@ -522,6 +528,18 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
                     fig.savefig(os.path.join(imaging_path,inversionPathMALM, fnew,'m0' + '_breturn' + str(b_return[k]) + '.png')
                                 , dpi=300)
                     m0_anisotropy.append(m0i)
+                    
+                    
+                    icsd, sol, ax, fig = proc.invert_MALM(imaging_path + inversionPathMALM + fnew,
+                                                wr=args.wr, typ=args.dim, pareto=False, show=True,
+                                                prior = False,
+                                                # fname_sim='VRTeSim_icsd.txt'
+                                                )
+                    # sol_anisotropy_stk.append(sol)
+                    # icsd_stk.append(icsd)
+                    fig.savefig(os.path.join(imaging_path,inversionPathMALM, fnew,'icsd.png'), dpi=300)
+                    plt.close('all')
+                    
                     # pl = proc.plot_m0_MALM(k_MALM_anisotropy[k], m0_anisotropy[k], pl=None, ext=['png'], show=False,
                     #                   index=0)
                     
@@ -547,17 +565,24 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
         # ERT_log[ERT_log['Name'].isin(['PRD_ERT_' + str(background_ERT_time)])]
         # ERT_log[ERT_log['Name']==('PRD_ERT_' + str(background_ERT_time))]
         # print(background_ERT_time)
+        
+        filterSeq8 = args.filter_seq
+        if '8returns' in f:
+            filterSeq8 = False
+            
         outMALM = proc.prepare_icsd(imaging_path + inversionPathMALM,
                                         f,
                                         k_indiv_merged[index_ERT_backgrd],
                                         reprocessed=bool(args.reprocessed),
                                         # reprocessed=True,
                                         nVRTe_cols=6*2+1, nVRTe_rows=4*2+1,
-                                        filter_seq_rec=args.filter_seq_rec,
-                                        filter_seq=args.filter_seq,
+                                        filter_seq_rec=False,
+                                        filter_seq=filterSeq8,
                                         reduce2d=True,
                                         )
         k_MALM.append(outMALM[0])
+        [_, imin, R_obs, nodes, R_icsd] = outMALM
+
 
     # %%
 
@@ -604,6 +629,12 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
     for i, f in enumerate(selected_files_MALM):
         if (('8returns' in f) and (args.filter_seq==True)):
             continue
+        
+            # icsd, sol, ax, fig = proc.invert_MALM(imaging_path + inversionPathMALM + f,
+            #                             wr=args.wr, typ=args.dim, pareto=pareto, show=True,
+            #                             prior = prior,
+            #                             # fname_sim='VRTeSim_icsd.txt'
+            #                             )
         
         print('*'*24)
         print(f)
@@ -670,26 +701,35 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
                         + '.csv', index=False)
     
     
-    np.savetxt(imaging_path + 
-                inversionPathMALM + 
-                'rms_ICSD.txt',
-                rms)
+    # np.savetxt(imaging_path + 
+    #             inversionPathMALM + 
+    #             'rms_ICSD.txt',
+    #             rms)
     
     
     
     fig, ax = plt.subplots(1)
+    
     rms_df = pd.DataFrame(rms)
     rms_df.columns = ['rms_ICSD']
     rms_df['datetime'] = ERT_log[ERT_log['Name'].isin(f_names)]['datetime'].values
     rms_df.set_index('datetime',inplace=True)
     rms_df.plot.hist(y='rms_ICSD')
+    
+
+    rms_df['rms_ICSD_perc'] = rms_df['rms_ICSD']*100
+    rms_df.to_csv(imaging_path + 
+                inversionPathMALM + 
+                'rms_ICSD.csv'
+                )
+    
     plt.savefig(imaging_path + 
                 inversionPathMALM + 'RMS_ICSD.png', dpi=350)
     
-    # np.savetxt(imaging_path + 
-    #             inversionPathMALM + 
-    #             'vrte_nodes_in_mesh.txt',
-    #             imin)
+    np.savetxt(imaging_path + 
+                inversionPathMALM + 
+                'vrte_nodes_in_mesh.txt',
+                imin)
     
     #%%
     dates = ERT_log[ERT_log['Name'].isin(f_names)]['datetime'].dt.strftime("%d %B").values #.strptime.dt.date.values
@@ -712,7 +752,16 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
         if len(f_names)>16:
             ncols = 5
             nrows = 4
-
+        if len(f_names)>20:
+            ncols = 5
+            nrows = 5
+        if len(f_names)>25:
+           ncols = 6
+           nrows = 5
+        if len(f_names)>30:
+           ncols = 6
+           nrows = 6
+           
         fig , axs = plt.subplots(nrows,ncols,
                                  sharex=True,
                                  sharey=True,
@@ -722,6 +771,11 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
         ax_r= axs.ravel()    
         j = 0          
         for i in range(len(f_names)):
+            
+            print('oo'*21)
+            print(f_names[i])
+            print('oo'*21)
+
             cbarplot = False
             if i == len(f_names)-1:
                 cbarplot = True
@@ -737,7 +791,7 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
             ax_r[j].set_title(dates[i],fontsize=6)
             ax_r[j].tick_params(axis='y', labelsize=6)
 
-            ax_r[j].set_ylabel('y [m]', fontsize=7)
+            ax_r[j].set_ylabel('z [m]', fontsize=7)
             if i>0:
                 ax_r[j].set_ylabel('')
             if i == len(f_names):
@@ -755,7 +809,9 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
         plt.subplots_adjust(wspace=-0.8, hspace=0.8)    
         plt.tight_layout()        
         plt.savefig(imaging_path + 
-                    inversionPathMALM + savename, dpi=350)
+                    inversionPathMALM + savename, dpi=400,
+                    bbox_inches='tight', pad_inches=0
+                    )
     
 
     matching = [i for i, s in enumerate(f_names) if "MALM2" in s]
@@ -768,14 +824,14 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
                          np.array(f_names)[matching_bool],
                          np.array(dates)[matching_bool],
                          clim=[0,0.1],
-                         savename='subplots_ICSD_stem.png'
+                         savename='subplots_ICSD.png'
                          )
     subplot_results_icsd(
                         np.array(icsd_stk)[~matching_bool],
                         np.array(f_names)[~matching_bool],
                         np.array(dates)[~matching_bool],
                         clim=[0,0.1],
-                        savename='subplots_ICSD.png'
+                        savename='subplots_ICSD_stem.png'
                          )
         
     #%%

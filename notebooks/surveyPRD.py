@@ -72,7 +72,7 @@ def plot_PRD_effect_icsd(k_indiv_merged, vrte_in_mesh,
                          **kwargs):
 
         
-    ylabel = r'Normalised Current Density'
+    ylabel = r'Normalised Current Density' #' (A.m^{-2}$)'
     if 'ylabel' in kwargs:
         ylabel = kwargs['ylabel']
         
@@ -80,7 +80,9 @@ def plot_PRD_effect_icsd(k_indiv_merged, vrte_in_mesh,
     if 'soil' in kwargs:
         soil = kwargs['soil']
 
-    color=['red','grey','blue']
+    # color=['red','grey','blue']
+    color=['darkgreen','darkorange']
+
     if 'color' in kwargs:
         color = kwargs['color']
    
@@ -98,7 +100,8 @@ def plot_PRD_effect_icsd(k_indiv_merged, vrte_in_mesh,
     # meshXYZ, midlleX = set_Xlim_LR_from_mesh(k_indiv_merged)
 
     
-    meshXYZ, split_x_zones = set_Xlim_LMR_from_mesh(k_indiv_merged)
+    # meshXYZ, split_x_zones = set_Xlim_LMR_from_mesh(k_indiv_merged)
+    meshXYZ, split_x_zones = set_Xlim_LR_from_mesh(k_indiv_merged)
 
 
     if 'detrend' in kwargs:
@@ -107,33 +110,46 @@ def plot_PRD_effect_icsd(k_indiv_merged, vrte_in_mesh,
         
         
     idx_vrte_left_bool = meshXYZ['X'][vrte_in_mesh] < split_x_zones
-    idx_vrte_middle_bool = (meshXYZ['X'][vrte_in_mesh] < 2*split_x_zones) & (meshXYZ['X'][vrte_in_mesh] > split_x_zones)
-    idx_vrte_right_bool = meshXYZ['X'][vrte_in_mesh] > 2*split_x_zones
+    # idx_vrte_middle_bool = (meshXYZ['X'][vrte_in_mesh] < 2*split_x_zones) & (meshXYZ['X'][vrte_in_mesh] > split_x_zones)
+    idx_vrte_right_bool = meshXYZ['X'][vrte_in_mesh] > split_x_zones
 
     idx_vrte_left_bool = idx_vrte_left_bool.reset_index()
-    idx_vrte_middle_bool = idx_vrte_middle_bool.reset_index()
+    # idx_vrte_middle_bool = idx_vrte_middle_bool.reset_index()
     idx_vrte_right_bool = idx_vrte_right_bool.reset_index()
     
     idx_vrte_left = idx_vrte_left_bool[idx_vrte_left_bool['X']].index.values
-    idx_vrte_middle = idx_vrte_middle_bool[idx_vrte_middle_bool['X']].index.values
+    # idx_vrte_middle = idx_vrte_middle_bool[idx_vrte_middle_bool['X']].index.values
     idx_vrte_right = idx_vrte_right_bool[idx_vrte_right_bool['X']].index.values
         
     
-    left_middle_right = ['Right']*len(df_MALM_icsd)
-    for idxl in idx_vrte_left:
-        left_middle_right[idxl] = 'Left'
+    # left_middle_right = ['Right']*len(df_MALM_icsd)
+    left_right = ['Right']*len(idx_vrte_left_bool)
     
-    for idxl in idx_vrte_middle:
-        left_middle_right[idxl] = 'Middle'
+    for idxl in idx_vrte_left:
+        left_right[idxl] = 'Left' 
+    
+    # for idxl in idx_vrte_left:
+    #     left_middle_right[idxl] = 'Left'
+    
+    # for idxl in idx_vrte_middle:
+    #     left_middle_right[idxl] = 'Middle'
         
         
-    df_MALM_icsd['LMR']= left_middle_right
+    # df_MALM_icsd['LMR']= left_middle_right
+    # df_MALM_icsd = df_MALM_icsd.drop('medianICSD',axis=1)
 
+    # len(left_right)
+    # df_MALM_icsd['LR']= left_right
+    # df_MALM_icsd.T = ['LR'] = left_right
+    df_MALM_icsd = df_MALM_icsd.T
+
+    # df_MALM_icsd['LR']
+    # df_MALM_icsd.reset_index()
     tuple_cols_2_select_soil = []
     tuple_cols_2_select_stem = []
     
     for tc in zip(df_MALM_icsd.columns):
-        print(tc[0][2] )
+        # print(tc[0][2] )
         # if 'LR' in tc[0]:
         #     continue
         if tc[0][2] is not None:
@@ -143,27 +159,30 @@ def plot_PRD_effect_icsd(k_indiv_merged, vrte_in_mesh,
                 tuple_cols_2_select_stem.append(tc[0])
 
     
-    if len(left_middle_right) == len(df_MALM_icsd):
+    if len(left_right) == len(df_MALM_icsd):
 
-        if soil:
-            soil_inject_df_MALM = df_MALM_icsd[tuple_cols_2_select_soil]
-            soil_inject_df_MALM['LMR']= left_middle_right
-            df_groups_soil_inj = soil_inject_df_MALM.droplevel(level=[1,2],axis=1).groupby(['LMR']).sum()
-            df_groups_soil_inj.columns = df_MALM_icsd[tuple_cols_2_select_soil].columns
+        # if soil:
+            # pass
+            # soil_inject_df_MALM = df_MALM_icsd[tuple_cols_2_select_soil]
+            # soil_inject_df_MALM['LR']= left_right
+            # df_groups_soil_inj = soil_inject_df_MALM.droplevel(level=[1,2],axis=1).groupby(['LMR']).sum()
+            # df_groups_soil_inj.columns = df_MALM_icsd[tuple_cols_2_select_soil].columns
     
-            df_groups_soil_inj.T.droplevel(level=[0,2]).plot(xlabel='date', ylabel=ylabel, ax=ax,
-                                    linestyle=':',
-                                    marker='o',
-                                    label='soil inj. sum curr.',
-                                    color=['red','grey','blue'],
-                                    alpha=0.3,
-                                    )
+            # df_groups_soil_inj.T.droplevel(level=[0,2]).plot(xlabel='date', ylabel=ylabel, ax=ax,
+            #                         linestyle=':',
+            #                         marker='o',
+            #                         label='soil inj. sum curr.',
+            #                         color=['red','grey','blue'],
+            #                         alpha=0.3,
+            #                         )
 
 
         stem_inject_df_MALM = df_MALM_icsd[tuple_cols_2_select_stem]
-        stem_inject_df_MALM['LMR']= left_middle_right
+        # stem_inject_df_MALM['LMR']= left_middle_right
+        stem_inject_df_MALM['LR']= left_right
 
-        df_groups_stem_inj = stem_inject_df_MALM.droplevel(level=[1,2],axis=1).groupby(['LMR']).sum()
+        # df_groups_stem_inj = stem_inject_df_MALM.droplevel(level=[1,2],axis=1).groupby(['LMR']).sum()
+        df_groups_stem_inj = stem_inject_df_MALM.droplevel(level=[1,2],axis=1).groupby(['LR']).sum()
         # print(stem_inject_df_MALM)
         df_groups_stem_inj.columns = df_MALM_icsd[tuple_cols_2_select_stem].columns
 
@@ -303,22 +322,24 @@ def plot_PRD_effect(k_indiv_merged, df, irr_log,
     ax.grid('on', which='major', axis='y',color='0.95' )
 
 
-    _, split_x_zones = set_Xlim_LMR_from_mesh(k_indiv_merged)
+    # _, split_x_zones = set_Xlim_LMR_from_mesh(k_indiv_merged)
+    _, split_x_zones = set_Xlim_LR_from_mesh(k_indiv_merged)
     
     if 'detrend' in kwargs:
         # midlleX = midlleX +  kwargs['detrend']
         split_x_zones = split_x_zones +  kwargs['detrend']
         
     idx_mesh_left = meshXYZ['X'] < split_x_zones
-    idx_mesh_midlle = (meshXYZ['X'] < 2*split_x_zones) & (meshXYZ['X'] > split_x_zones) 
-    idx_mesh_right = meshXYZ['X'] > 2*split_x_zones
+    # idx_mesh_midlle = (meshXYZ['X'] < 2*split_x_zones) & (meshXYZ['X'] > split_x_zones) 
+    idx_mesh_right = meshXYZ['X'] > split_x_zones
     df['Zone'] = None
     df['Zone'][idx_mesh_left] = 'Left'
-    df['Zone'][idx_mesh_midlle] = 'Middle'
+    # df['Zone'][idx_mesh_midlle] = 'Middle'
     df['Zone'][idx_mesh_right] = 'Right'
     
     
-    color=['darkgreen', 'grey','darkorange']
+    # color=['darkgreen', 'grey','darkorange']
+    color=['darkgreen','darkorange']
     df_groups = df.groupby(['Zone']).mean()
     
     df_groups = df_groups.T   

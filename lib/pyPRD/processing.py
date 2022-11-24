@@ -30,6 +30,25 @@ from icsd3d.icsd3d_class import iCSD3d as i3d
 
 MESH = "mesh/mesh_rhizo_resipy_vrte_v7.msh"
 
+
+def R2(y_fit,y,x=False):
+    # residual sum of squares
+    ss_res = np.sum((y - y_fit) ** 2)
+    # total sum of squares
+    ss_tot = np.sum((y - np.mean(y)) ** 2)
+    # r-squared
+    r2 = 1 - (ss_res / ss_tot)
+    
+    # if x:
+    from scipy import stats
+    slope, intercept, r_value, p_value, std_err = stats.linregress(y_fit,y)
+    return r_value, p_value
+
+    # else:
+    #     return r2
+
+
+
 def prepare_MALM(path, filename, k_ERT, parallel=False,
                  reduce2d=False,
                  **kwargs):
