@@ -14,7 +14,7 @@ import matplotlib as mpl
 import math
 import surveyPRD
 
-imaging_path = '../imaging_ERT_MALM/'
+imaging_path = '../imaging_ERT_MALM_PaperREV1/'
 
 # %%
 
@@ -26,24 +26,24 @@ def get_cmd():
     # period.add_argument('-cycle', type=list, help='cycle to analyse', default=[None], required=False) #[0,1,2,3,4,5]
     period.add_argument('-cycle', '--cycle', nargs='+',
                         # help='list of cycle', type=int, default=[3,4,5,6,7,8], required=False)
-                        help='list of cycle', type=int, default=[0,1,2,3,4,5,6,7,8], required=False)
+                        # help='list of cycle', type=int, default=[0,1,2,3,4,5,6,7,8], required=False)
                         # help='list of cycle', type=int, default=[3,4,5,6,7,8], required=False)
-                        # help='list of cycle', type=int, default=[6,7], required=False)
-                        # help='list of cycle', type=int, default=-99, required=False)
+                        help='list of cycle', type=int, default=[6,7], required=False)
+                        # help='list of cycle', type=int, default=[5,6], required=False)
+                        # help='list of cycle', type=int, default=[-99], required=False)
     # period.add_argument('-cycle', '--cycle', nargs='+',
     #                     help='list of cycle', type=int, default=[4,5,6,7,8,9], required=False)
     period.add_argument(
         '-startD', type=str, help='start date to analyse', default=None, required=False)
     period.add_argument('-endD', type=str, help='end date',
                         default=None, required=False)
-
     process_param = parse.add_argument_group('process_param')
     process_param.add_argument(
         '-recErr', type=int, help='Rec. error', default=5, required=False)
     process_param.add_argument(
         '-reprocessed', type=int, help='reprocessed', default=0, required=False)
     process_param.add_argument(
-        '-TL', type=int, help='TimeLapse', default=0, required=False)
+        '-TL', type=int, help='TimeLapse', default=1, required=False)
     process_param.add_argument(
         '-TLreg', type=int, help='TimeLapse reg mode', default=1, required=False)
     process_param.add_argument(
@@ -59,7 +59,7 @@ def get_cmd():
     process_param.add_argument('-pareto', type=int,
                                help='pareto', default=0, required=False)
     process_param.add_argument('-wr', type=float,
-                               help='reg. weight', default=1, required=False)
+                               help='reg. weight', default=10, required=False)
     
     process_param.add_argument('-anisotropy', type=float,
                                help='anisotropy procesing', default=0, required=False)
@@ -87,9 +87,10 @@ def get_cmd():
     # args.startD = '29/6/2022,09:29'
     # args.endD = '5/7/2022,16:35'
     
+    # LAST
+    # args.startD = '11/7/2022,15:49'
+    # args.endD = '11/7/2022,17:16'
        
-    
-    
     return(args)
 
 # %%
@@ -127,9 +128,9 @@ def run_ERT_ind(
     df_rms = []
     for fi in range(len(selected_files_ERT)):
         proc.plot_ERT(k_indiv_merged[fi], vmin=0, vmax=2,
-                      attr="Resistivity(log10)")
+                      attr="Resistivity(log10)",fi=selected_files_ERT[fi])
         proc.plot_ERT(k_indiv_merged[fi], vmin=0, vmax=50,
-                      attr="Resistivity(ohm.m)")
+                      attr="Resistivity(ohm.m)",fi=selected_files_ERT[fi])
     
     # for i, ki in enumerate(k_indiv_merged):
         # nb_of_rejected_quad[i] = ki.surveys[0]
@@ -272,14 +273,16 @@ def run_TL(selected_files_ERT):
         # proc.plot_ERT(k_TL[0], vmin=-10, vmax=1,
         #               attr="Sensitivity_map(log10)", index=fi)
         proc.plot_ERT(k_TL[0], vmin=0, vmax=2,
-                      attr="Resistivity(log10)", index=fi)
+                      attr="Resistivity(log10)", index=fi,
+                      fi=selected_files_ERT[fi])
         proc.plot_ERT(k_TL[0], vmin=0, vmax=50,
                       attr="Resistivity(ohm.m)", index=fi,
+                      fi=selected_files_ERT[fi],
                       )
         if fi > 0:
             proc.plot_ERT(k_TL[0], vmin=-20, vmax=20,
                           attr="difference(percent)", index=fi,
-                          showElec=False)
+                          showElec=False, fi=selected_files_ERT[fi])
     
     
     # k_TL = proc.invert_ERT_TL(
@@ -366,7 +369,7 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
                                   k_indiv_merged[index_ERT_backgrd],
                                   filter_seq=True,
                                   filter_seq_rec=False,
-                                  percent_rec=1e9,
+                                  percent_rec=10,
                                   ax=ax,
                                   m=71
                                   )
@@ -392,117 +395,20 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
                                     f_MALM,
                                     ERT_log)
     
-    #%%
-    fig, ax = plt.subplots((2), figsize=(8, 5), sharex=(True))
     
-    # df_SWC
-    
-    ax0 = surveyPRD.plot_timeline(ERT_log, irr_log, ax=ax[0], dropMALM=True)
-
-    surveyPRD.plot_PRD_effect_MALM(k_indiv_merged, df_MALM, ax=ax[1], **kwargs)
-    # ax.get_xaxis().set_major_locator(mdates.HourLocator(interval=5))
-    # ax.get_xaxis().set_major_formatter(mdates.DateFormatter("%d/%m - %Hh"))
-    ax[1].grid('on', which='major', axis='x',color='0.95' )
-    ax[1].grid('on', which='major', axis='y',color='0.95' )
-    plt.xticks(rotation=35)
-    plt.tight_layout()
-
-    if type(args.cycle) is int:
-        args.cycle = [args.cycle]
-    plt.savefig(imaging_path + inversionPathMALM + 'PRDeffect' + str([*args.cycle]),
-                dpi=450)
-    plt.close('all')
-
-
-    #%%
-
-    proc.plot_scatter_MALM(imaging_path+inversionPathMALM,
-                           df_MALM,
-                           k_indiv_merged,
-                           ERT_log,
-                           vmin=-625, vmax=125,
-                           f_MALM=f_MALM,
-                           )
-    plt.close('all')
-
-
-    #%%
-    df_MALM_diff_b = proc.plot_scatter_MALM_diff(imaging_path+inversionPathMALM,
-                                df_MALM,
-                                k_indiv_merged,
-                                f_MALM,
-                                ERT_log,
-                                background_diff=True,
-                                vmin=25, vmax=150,
-                                )
-
-    fig, ax = plt.subplots((2), figsize=(8, 5), sharex=(True))   
-    ax0 = surveyPRD.plot_timeline(ERT_log, irr_log, ax=ax[0], dropMALM=True)
-    surveyPRD.plot_PRD_effect_MALM_diff(k_indiv_merged, df_MALM_diff_b, ax=ax[1])
-    # ax.get_xaxis().set_major_locator(mdates.HourLocator(interval=5))
-    # ax.get_xaxis().set_major_formatter(mdates.DateFormatter("%d/%m - %Hh"))
-    plt.xticks(rotation=35)
-    plt.tight_layout()
-
-    if type(args.cycle) is int:
-        args.cycle = [args.cycle]
-    plt.savefig(imaging_path + inversionPathMALM + 'PRDeffect_diff_background' + str([*args.cycle]),
-                dpi=450)
-    plt.close('all')
-
-    
-    
-    df_MALM_diff = proc.plot_scatter_MALM_diff(imaging_path+inversionPathMALM,
-                                df_MALM,
-                                k_indiv_merged,
-                                f_MALM,
-                                ERT_log,
-                                background_diff=True,
-                                vmin=25, vmax=150,
-                                )
-    
-    fig, ax = plt.subplots((2), figsize=(8, 5), sharex=(True))   
-    ax0 = surveyPRD.plot_timeline(ERT_log, irr_log, ax=ax[0], dropMALM=True)
-    surveyPRD.plot_PRD_effect_MALM_diff(k_indiv_merged, df_MALM_diff, ax=ax[1])
-    ax[1].grid('on', which='major', axis='x',color='0.95' )
-    ax[1].grid('on', which='major', axis='y',color='0.95' )
-    # ax.get_xaxis().set_major_locator(mdates.HourLocator(interval=5))
-    # ax.get_xaxis().set_major_formatter(mdates.DateFormatter("%d/%m - %Hh"))
-    plt.xticks(rotation=35)
-    plt.tight_layout()
-
-    if type(args.cycle) is int:
-        args.cycle = [args.cycle]
-    plt.savefig(imaging_path + inversionPathMALM + 'PRDeffect_diff' + str([*args.cycle]),
-                dpi=450)
-    plt.close('all')
-
-    
-    
-    #%%
-    if len(f_MALM) == 2*len(k_indiv_merged):
-        df_MALM_diff_StemSoil = proc.plot_scatter_MALM_diff_stem_soil(
-                                            imaging_path+inversionPathMALM,
-                                            df_MALM,
-                                            k_indiv_merged,
-                                            f_MALM,
-                                            ERT_log,
-                                            vmin=25, vmax=150,
-                                            )
-    plt.close('all')
-
-        
     #%% Anisotropy 
     if bool(args.anisotropy):
         k_MALM_anisotropy = []
         m0_anisotropy = []
         for i, f in enumerate(selected_files_MALM):
             if '8returns' in f:
-                b_return = [1,4,8,17,20,24,33,36,40,49,52,64]
+                # b_return = [1,4,8,17,20,24,33,36,40,49,52,64]
+                b_return = [1,8,17,24,36,49,64]
+
                 for k in range(len(b_return)):
-                    print('*'*24)
+                    print('A'*24)
                     print(k,f)
-                    print('*'*24)
+                    print('A'*24)
                     fnew = f.split('.csv')[0] + '_B'+ str(b_return[k])
                     background_ERT_time = int(f.split('_')[2])
                     for j, n in enumerate(ERT_log['Name'][ERT_log['method'] == 'ERT']):
@@ -511,6 +417,7 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
                     outMALM = proc.prepare_icsd(imaging_path + inversionPathMALM,
                                                     fnew,
                                                     k_indiv_merged[index_ERT_backgrd],
+                                                    # reprocessed=1, #bool(args.reprocessed),
                                                     reprocessed=bool(args.reprocessed),
                                                     nVRTe_cols=6*2+1, nVRTe_rows=4*2+1,
                                                     filter_seq_rec=args.filter_seq_rec,
@@ -522,7 +429,8 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
                     
                     m0i,ax,fig = proc.m0_MALM(imaging_path + inversionPathMALM + fnew,
                                            method_m0='F1', typ=args.dim,
-                                           show=True
+                                           show=True,
+                                           retElec=k_indiv_merged[0].elec[['x','z']].iloc[b_return[k]-1].to_numpy()
                                            )
                     plt.close()
                     fig.savefig(os.path.join(imaging_path,inversionPathMALM, fnew,'m0' + '_breturn' + str(b_return[k]) + '.png')
@@ -531,10 +439,15 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
                     
                     
                     icsd, sol, ax, fig = proc.invert_MALM(imaging_path + inversionPathMALM + fnew,
-                                                wr=args.wr, typ=args.dim, pareto=False, show=True,
-                                                prior = False,
+                                                wr=args.wr, typ=args.dim, pareto=args.pareto, show=True,
+                                                prior = False,                                                        
+                                                clim=[0,0.1],
+                                                retElec=k_indiv_merged[0].elec[['x','z']].iloc[b_return[k]-1].to_numpy()
                                                 # fname_sim='VRTeSim_icsd.txt'
                                                 )
+                    
+
+
                     # sol_anisotropy_stk.append(sol)
                     # icsd_stk.append(icsd)
                     fig.savefig(os.path.join(imaging_path,inversionPathMALM, fnew,'icsd.png'), dpi=300)
@@ -554,9 +467,9 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
     
     k_MALM = []
     for i, f in enumerate(selected_files_MALM):
-        print('*'*24)
+        print('-'*24)
         print(f)
-        print('*'*24)
+        print('-'*24)
 
         background_ERT_time = int(f.split('_')[2])
         for j, n in enumerate(ERT_log['Name'][ERT_log['method'] == 'ERT']):
@@ -566,18 +479,21 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
         # ERT_log[ERT_log['Name']==('PRD_ERT_' + str(background_ERT_time))]
         # print(background_ERT_time)
         
+        m = 71
         filterSeq8 = args.filter_seq
         if '8returns' in f:
             filterSeq8 = False
+            m = None
             
         outMALM = proc.prepare_icsd(imaging_path + inversionPathMALM,
                                         f,
                                         k_indiv_merged[index_ERT_backgrd],
+                                        # reprocessed=1, #bool(args.reprocessed),
                                         reprocessed=bool(args.reprocessed),
-                                        # reprocessed=True,
                                         nVRTe_cols=6*2+1, nVRTe_rows=4*2+1,
-                                        filter_seq_rec=False,
+                                        filter_seq_rec=args.filter_seq_rec,
                                         filter_seq=filterSeq8,
+                                        m=m,
                                         reduce2d=True,
                                         )
         k_MALM.append(outMALM[0])
@@ -627,7 +543,7 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
     j = 0
 
     for i, f in enumerate(selected_files_MALM):
-        if (('8returns' in f) and (args.filter_seq==True)):
+        if (('8returns' in f)):# and (args.filter_seq==True)):
             continue
         
             # icsd, sol, ax, fig = proc.invert_MALM(imaging_path + inversionPathMALM + f,
@@ -730,6 +646,110 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
                 inversionPathMALM + 
                 'vrte_nodes_in_mesh.txt',
                 imin)
+    
+    #%%
+    
+    # # if args.filter_seq_rec == False:
+    # fig, ax = plt.subplots((2), figsize=(8, 5), sharex=(True))
+    
+    # # df_SWC
+    
+    # ax0 = surveyPRD.plot_timeline(ERT_log, irr_log, ax=ax[0], dropMALM=True)
+
+    # surveyPRD.plot_PRD_effect_MALM(k_indiv_merged, df_MALM, ax=ax[1], **kwargs)
+    # # ax.get_xaxis().set_major_locator(mdates.HourLocator(interval=5))
+    # # ax.get_xaxis().set_major_formatter(mdates.DateFormatter("%d/%m - %Hh"))
+    # ax[1].grid('on', which='major', axis='x',color='0.95' )
+    # ax[1].grid('on', which='major', axis='y',color='0.95' )
+    # plt.xticks(rotation=35)
+    # plt.tight_layout()
+
+    # if type(args.cycle) is int:
+    #     args.cycle = [args.cycle]
+    # plt.savefig(imaging_path + inversionPathMALM + 'PRDeffect' + str([*args.cycle]),
+    #             dpi=450)
+    # plt.close('all')
+
+
+    #%%
+
+    proc.plot_scatter_MALM(imaging_path+inversionPathMALM,
+                           df_MALM,
+                           k_indiv_merged,
+                           ERT_log,
+                           vmin=-625, vmax=125,
+                           f_MALM=f_MALM,
+                           )
+    plt.close('all')
+
+
+    #%%
+    df_MALM_diff_b = proc.plot_scatter_MALM_diff(imaging_path+inversionPathMALM,
+                                df_MALM,
+                                k_indiv_merged,
+                                f_MALM,
+                                ERT_log,
+                                background_diff=True,
+                                vmin=25, vmax=150,
+                                )
+
+    # fig, ax = plt.subplots((2), figsize=(8, 5), sharex=(True))   
+    # ax0 = surveyPRD.plot_timeline(ERT_log, irr_log, ax=ax[0], dropMALM=True)
+    # surveyPRD.plot_PRD_effect_MALM_diff(k_indiv_merged, df_MALM_diff_b, ax=ax[1])
+    # # ax.get_xaxis().set_major_locator(mdates.HourLocator(interval=5))
+    # # ax.get_xaxis().set_major_formatter(mdates.DateFormatter("%d/%m - %Hh"))
+    # plt.xticks(rotation=35)
+    # plt.tight_layout()
+
+    # if type(args.cycle) is int:
+    #     args.cycle = [args.cycle]
+    # plt.savefig(imaging_path + inversionPathMALM + 'PRDeffect_diff_background' + str([*args.cycle]),
+    #             dpi=450)
+    # plt.close('all')
+
+    
+    
+    df_MALM_diff = proc.plot_scatter_MALM_diff(imaging_path+inversionPathMALM,
+                                df_MALM,
+                                k_indiv_merged,
+                                f_MALM,
+                                ERT_log,
+                                background_diff=True,
+                                vmin=25, vmax=150,
+                                )
+    
+    # fig, ax = plt.subplots((2), figsize=(8, 5), sharex=(True))   
+    # ax0 = surveyPRD.plot_timeline(ERT_log, irr_log, ax=ax[0], dropMALM=True)
+    # surveyPRD.plot_PRD_effect_MALM_diff(k_indiv_merged, df_MALM_diff, ax=ax[1])
+    # ax[1].grid('on', which='major', axis='x',color='0.95' )
+    # ax[1].grid('on', which='major', axis='y',color='0.95' )
+    # # ax.get_xaxis().set_major_locator(mdates.HourLocator(interval=5))
+    # # ax.get_xaxis().set_major_formatter(mdates.DateFormatter("%d/%m - %Hh"))
+    # plt.xticks(rotation=35)
+    # plt.tight_layout()
+
+    # if type(args.cycle) is int:
+    #     args.cycle = [args.cycle]
+    # plt.savefig(imaging_path + inversionPathMALM + 'PRDeffect_diff' + str([*args.cycle]),
+    #             dpi=450)
+    # plt.close('all')
+
+    
+    
+    #%%
+    if len(f_MALM) == 2*len(k_indiv_merged):
+        df_MALM_diff_StemSoil = proc.plot_scatter_MALM_diff_stem_soil(
+                                            imaging_path+inversionPathMALM,
+                                            df_MALM,
+                                            k_indiv_merged,
+                                            f_MALM,
+                                            ERT_log,
+                                            vmin=25, vmax=150,
+                                            )
+    plt.close('all')
+
+        
+
     
     #%%
     dates = ERT_log[ERT_log['Name'].isin(f_names)]['datetime'].dt.strftime("%d %B").values #.strptime.dt.date.values
@@ -837,32 +857,35 @@ def run_icsd(selected_files_MALM, selected_files_ERT, k_indiv_merged,
     #%%
 
     
-    fig, ax = plt.subplots((2), figsize=(8, 5), sharex=(True))   
-    ax0 = surveyPRD.plot_timeline(ERT_log, irr_log, ax=ax[0], dropMALM=True)
+    # fig, ax = plt.subplots((2), figsize=(8, 5), sharex=(True))   
+    # ax0 = surveyPRD.plot_timeline(ERT_log, irr_log, ax=ax[0], dropMALM=True)
     
-    df_MALM_icsd = surveyPRD.plot_PRD_effect_icsd(k_indiv_merged, 
-                                                  imin,
-                                                  df_MALM_icsd, irr_log,
-                                                  ax=ax[1],
-                                                  hours_interval=10,
-                                                  **kwargs)
-    ax[1].grid('on', which='major', axis='x',color='0.95' )
-    ax[1].grid('on', which='major', axis='y',color='0.95' )
-    # ax.get_xaxis().set_major_locator(mdates.HourLocator(interval=5))
-    # ax.get_xaxis().set_major_formatter(mdates.DateFormatter("%d/%m - %Hh"))
-    plt.xticks(rotation=35)
-    plt.tight_layout()
+    # df_MALM_icsd = surveyPRD.plot_PRD_effect_icsd(k_indiv_merged, 
+    #                                               imin,
+    #                                               df_MALM_icsd, irr_log,
+    #                                               ax=ax[1],
+    #                                               hours_interval=10,
+    #                                               **kwargs)
+    # ax[1].grid('on', which='major', axis='x',color='0.95' )
+    # ax[1].grid('on', which='major', axis='y',color='0.95' )
+    # # ax.get_xaxis().set_major_locator(mdates.HourLocator(interval=5))
+    # # ax.get_xaxis().set_major_formatter(mdates.DateFormatter("%d/%m - %Hh"))
+    # plt.xticks(rotation=35)
+    # plt.tight_layout()
     
-    # Add a zoom to irrigation
-    # -----------------------------------------------------------------
+    # # Add a zoom to irrigation
+    # # -----------------------------------------------------------------
 
-    if type(args.cycle) is int:
-        args.cycle = [args.cycle]
-    plt.savefig(imaging_path + inversionPathMALM + 'PRDeffect_icsd' + str([*args.cycle]),
-                dpi=450)
+    # if type(args.cycle) is int:
+    #     args.cycle = [args.cycle]
+    # plt.savefig(imaging_path + inversionPathMALM + 'PRDeffect_icsd' + str([*args.cycle]),
+    #             dpi=450)
     
     
 # %%
+# import pyvista as pv
+# pv.__version__ # '0.34.1
+
 if __name__ == '__main__':
 
     '''
@@ -890,10 +913,11 @@ if __name__ == '__main__':
     # -----------------------------------
     f_ERT, f_MALM,  ERT_log, irr_log = surveyPRD.load_log_files(args)
 
+    # test
     # ERT inversion
     # -----------------------------------
-    k_indiv_ERT, df_ERT = run_ERT_ind(args, f_ERT, ERT_log,
-                                      detrend=detrend)
+    # k_indiv_ERT, df_ERT = run_ERT_ind(args, f_ERT, ERT_log,
+    #                                   detrend=detrend)
     
 
     # TL ERT inversion

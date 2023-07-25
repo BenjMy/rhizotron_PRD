@@ -1,8 +1,3 @@
-Anisotropy analysis
-======================
-
-
-python invert.py -cycle 6 7 8 -TL 0 -icsd 1 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -anisotropy 1
 
 
 All cycles ERT analysis
@@ -11,6 +6,8 @@ All cycles ERT analysis
 
 No PRD intro protocol
 ----------------------
+python invert.py -cycle -1 0 1 2 3 4 5 6 7 8 9 -TL 0 -icsd 1 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5
+
 python invert.py -cycle 0 1 2 3 4 5 6 7 8 -TL 0 -icsd 0 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5
 
 Filter_seq
@@ -61,7 +58,6 @@ python invert.py -cycle 3 -TL 1 -icsd 0 -reprocessed 0 -filter_seq 0 -filter_seq
 python invert.py -cycle -99 -startD 25/5/2022,13:29 -endD 1/6/2022,12:51 -TL 1 -icsd 0 -reprocessed 0 -filter_seq 0 -filter_seq_rec 1 -recErr 5
 
 
-
 # per cycle
 python invert.py -cycle -1 -TL 1 -TLreg 1 -icsd 0 -reprocessed 0 -filter_seq 0 -filter_seq_rec 1 -recErr 5
 python invert.py -cycle 0 -TL 1 -TLreg 1 -icsd 0 -reprocessed 0 -filter_seq 0 -filter_seq_rec 1 -recErr 5
@@ -82,6 +78,9 @@ python invert.py -cycle -99 -startD 8/6/2022,09:59 -endD  8/6/2022,12:31 -TL 1 -
 # cycle 3 to 4
 python invert.py -cycle -99 -startD 15/6/2022,16:19 -endD  22/6/2022,16:11 -TL 1 -TLreg 1 -icsd 0 -reprocessed 0 -filter_seq 0 -filter_seq_rec 1 -recErr 5
 
+# cycle 6 to 7
+python invert.py -cycle -99 -startD 29/6/2022,9:29 -endD  5/7/2022,16:36 -TL 1 -TLreg 1 -icsd 0 -reprocessed 0 -filter_seq 0 -filter_seq_rec 1 -recErr 5
+
 
 
 python invert.py -cycle -99 -startD 25/5/2022,13:29 -endD 11/7/2022,12:05 -TL 1 -TLreg 1 -icsd 0 -reprocessed 0 -filter_seq 0 -filter_seq_rec 1 -recErr 5
@@ -96,13 +95,39 @@ python invert.py -cycle 6 -TL 1 -icsd 0 -reprocessed 0 -filter_seq 0 -filter_seq
 ICSD analysis
 ==============
 
+
+# ---------------------- effect of the protocol N fixed ---------------------- --> filter_seq = 1
+# wr = 1
 python invert.py -cycle 3 4 5 6 7 8 9 -TL 0 -icsd 1 -reprocessed 1 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -pareto 0 -wr 1
-python invert.py -cycle 3 4 5 6 7 8 9 -TL 0 -icsd 1 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -pareto 0 -wr 1
+# wr = 10
+python invert.py -cycle 3 4 5 6 7 8 9 -TL 0 -icsd 1 -reprocessed 1 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -pareto 0 -wr 10
  
- 
+# ---------------------- effect of the protocol N vary ---------------------- --> filter_seq_rec = 1
+# wr = 1
+python invert.py -cycle 0 1 2 3 4 5 6 7 8 9 -TL 0 -icsd 1 -reprocessed 0 -filter_seq 0 -filter_seq_rec 1 -recErr 5 -pareto 0 -wr 1  -petro 1 -anisotropy 0
+# wr = 50
+python invert.py -cycle 0 1 2 3 4 5 6 7 8 9 -TL 0 -icsd 1 -reprocessed 0 -filter_seq 0 -filter_seq_rec 1 -recErr 5 -pareto 0 -wr 50  -petro 1 -anisotropy 0
+
+# ---------------------- Anisotropy analysis ----------------------
+
+#python invert.py -cycle 8 -TL 0 -icsd 1 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -anisotropy 1
+# wr = 1, filter_seq
+python invert.py -cycle -99 -startD 11/7/2022,12:24 -endD  11/7/2022,12:26 -TL 0 -TLreg 1 -icsd 1 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -petro 1 -wr 10 -anisotropy 1
+# wr = 50, filter_seq
+python invert.py -cycle -99 -startD 11/7/2022,12:24 -endD  11/7/2022,12:26 -TL 0 -TLreg 1 -icsd 1 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -petro 1 -wr 50 -anisotropy 1
+# wr = 1, filter_seq_rec
+python invert.py -cycle -99 -startD 11/7/2022,12:24 -endD  11/7/2022,12:26 -TL 0 -TLreg 1 -icsd 1 -reprocessed 0 -filter_seq 0 -filter_seq_rec 1 -recErr 5 -petro 1 -wr 10 -anisotropy 1
+# wr = 50, filter_seq_rec
+python invert.py -cycle -99 -startD 11/7/2022,12:24 -endD  11/7/2022,12:26 -TL 0 -TLreg 1 -icsd 1 -reprocessed 0 -filter_seq 0 -filter_seq_rec 1 -recErr 5 -petro 1 -wr 50 -anisotropy 1
+
+
+
+
+
 # ---------------------- 1 cycle analysis ----------------------
 python invert.py -cycle 8 -TL 1 -icsd 0 -reprocessed 0 -filter_seq 0 -filter_seq_rec 1 -recErr 5
 python invert.py -cycle 8 -TL 0 -icsd 1 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5
+
 
 
 
@@ -111,16 +136,22 @@ Synthetic case
 ==============
 #'%d/%m/%Y,%H:%M'
 
-python invert_synth.py -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -scenario A
+python invert_synth.py -reprocessed 0 -filter_seq 0 -filter_seq_rec 1 -recErr 5 -scenario 4Sbis -wr 1 
+
+python invert_synth.py -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -scenario E
 
 python invert_synth.py -cycle 7 -startD 29/6/2022,13:50 -endD 30/6/2022,14:50 -reprocessed 1 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -scenario B
+
+
+python invert_synth.py -reprocessed 0 -filter_seq 0 -filter_seq_rec 1 -recErr 5 -scenario 4Sbis -wr 1 -obs_err const -pareto 1
+python invert_synth.py -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -scenario 4Sbis -wr 1 -obs_err const -pareto 1
 
 
 Plot papers ERT PRD effects + Archie
 ============================
 python invert.py -cycle 6 7 8 -TL 0 -icsd 0 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -petro 1
 
-python invert.py -cycle 0 1 2 3 4 5 6 7 8 -TL 0 -icsd 1 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -petro 1 -anisotropy 0 -wr 10
+python invert.py -cycle 0 1 2 3 4 5 6 7 8 -TL 0 -icsd 1 -reprocessed 0 -filter_seq 0 -filter_seq_rec 1 -recErr 5 -petro 1 -anisotropy 0 -wr 1
 
 python invert.py -cycle 3 4 5 6 7 8 -TL 0 -icsd 1 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -petro 1
 
@@ -129,6 +160,8 @@ python invert.py -cycle -99 -startD 29/6/2022,09:29 -endD  5/7/2022,18:26 -TL 1 
 python invert.py -cycle -99 -startD 29/6/2022,09:29 -endD  5/7/2022,18:26 -TL 1 -TLreg 1 -icsd 1 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -petro 1 -wr 10
 
 
+python invert.py -cycle -99 -startD 11/7/2022,12:24 -endD  11/7/2022,12:26 -TL 1 -TLreg 1 -icsd 1 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -petro 1 -wr 10 -anisotropy 0
+
 
 
 TEST
@@ -136,6 +169,17 @@ TEST
 
 python invert.py -cycle 7 -TL 0 -icsd 1 -reprocessed 1 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -startD 29/6/2022,14:14 -endD 29/6/2022,15:03 -pareto 0 -wr 10
  
+# Pareto analysis 
+
+python invert.py -cycle -99 -startD 11/7/2022,15:49 -endD  11/7/2022,17:16 -TL 0 -TLreg 1 -icsd 1 -reprocessed 0 -filter_seq 1 -filter_seq_rec 0 -recErr 5 -petro 0 -wr 10 -anisotropy 0 -pareto 1
+python invert.py -cycle -99 -startD 11/7/2022,15:49 -endD  11/7/2022,17:16 -TL 0 -TLreg 1 -icsd 1 -reprocessed 0 -filter_seq 0 -filter_seq_rec 0 -recErr 5 -petro 0 -wr 10 -anisotropy 0 -pareto 1
+python invert.py -cycle -99 -startD 11/7/2022,15:49 -endD  11/7/2022,17:16 -TL 0 -TLreg 1 -icsd 1 -reprocessed 0 -filter_seq 0 -filter_seq_rec 1 -recErr 5 -petro 0 -wr 10 -anisotropy 0 -pareto 1
+
+
+
+Plot papers REV1
+============================
+python invert.py -cycle -1 0 1 2 3 4 5 6 7 8 9 -TL 1 -icsd 1 -reprocessed 0 -filter_seq 0 -filter_seq_rec 1 -recErr 5 -petro 1 -anisotropy 0 -wr 1
 
 
 

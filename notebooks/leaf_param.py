@@ -10,6 +10,12 @@ from matplotlib.pylab import plt
 import matplotlib.dates as mdates
 import matplotlib.transforms as mtransforms
 
+import locale
+import pandas as pd
+
+# Set the locale to English
+locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
+
 #%%
 imaging_path = '../imaging_ERT_MALM/'
 fmt = '%d/%m/%Y,%H:%M'
@@ -67,16 +73,16 @@ axs['a'].xaxis.set_major_formatter(mdates.DateFormatter('%B %d'))
 
 
 leaf_gsw = pd.read_csv('../leaf_stomatal_conductance_PRD.csv',
-                    # infer_datetime_format=True,
+                    infer_datetime_format=True,
                     thousands=',')
 
-leaf_gsw['datetime'] = pd.to_datetime(leaf_gsw['Date'])
+leaf_gsw['datetime'] = pd.to_datetime(leaf_gsw['Date'], format='%d/%m/%Y')
 leaf_gsw['stress'] = 'low'
 
 leaf_gsw['gsw'] = leaf_gsw['gsw']*1e-3
 
 
-leaf_gsw['stress'].loc[leaf_gsw['datetime']=='2022-08-06'] = 'high'
+leaf_gsw['stress'].loc[leaf_gsw['datetime']=='2022-06-08'] = 'high'
 # leaf_gsw.groupby(by='datetime').boxplot(column='gsw', ax=axs['b'])
 plt.setp(axs['a'].get_xticklabels(), rotation=30, ha='right')
 

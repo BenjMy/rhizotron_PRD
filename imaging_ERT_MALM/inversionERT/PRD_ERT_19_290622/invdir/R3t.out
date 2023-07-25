@@ -2,7 +2,7 @@
 
  >> R 3 t     E R T    M o d e l    v 2.31 <<
 
- >> Date: 24-10-2022
+ >> Date: 24-11-2022
  >> My beautiful 3D survey                                                          
  >> A d v a n c e d   M e s h   I n p u t <<
  >> T e t r a h e d r a l   E l e m e n t   M e s h <<
@@ -51,12 +51,12 @@
 
     Timing Summary
     ==============
-    Total time taken:                                38. s
+    Total time taken:                                41. s
 
     Percent time taken forming element equations:    0.1 %
-    Percent time taken solving forward  equations:   3.3 %
-    Percent time taken forming Jacobian:            12.7 %
-    Percent time taken solving inverse equations:   81.6 %
+    Percent time taken solving forward  equations:   3.2 %
+    Percent time taken forming Jacobian:            10.0 %
+    Percent time taken solving inverse equations:   84.4 %
     Percent time taken calculating res. matrix:      0.0 %
 
     Timing Details
@@ -66,9 +66,9 @@
     Number of calls to solve forward equations:      216
     Average time taken in call:                      0.0 s
     Number of calls to form Jacobian:                  1
-    Average time taken in call:                      4.9 s
+    Average time taken in call:                      4.1 s
     Number of calls to solve inverse equations:        2
-    Average time taken in call:                     15.7 s
+    Average time taken in call:                     17.3 s
     Number of calls to calculate res. matrix:          0
     Average time taken in call:                      0.0 s
 

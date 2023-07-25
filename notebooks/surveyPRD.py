@@ -14,6 +14,9 @@ from resipy import Project
 import math
 
 
+import locale
+# Set the locale to English
+locale.setlocale(locale.LC_TIME, 'en_US.UTF-8')
 
 def definePaths(args):
     
@@ -180,20 +183,87 @@ def plot_PRD_effect_icsd(k_indiv_merged, vrte_in_mesh,
         stem_inject_df_MALM = df_MALM_icsd[tuple_cols_2_select_stem]
         # stem_inject_df_MALM['LMR']= left_middle_right
         stem_inject_df_MALM['LR']= left_right
-
+    
         # df_groups_stem_inj = stem_inject_df_MALM.droplevel(level=[1,2],axis=1).groupby(['LMR']).sum()
         df_groups_stem_inj = stem_inject_df_MALM.droplevel(level=[1,2],axis=1).groupby(['LR']).sum()
         # print(stem_inject_df_MALM)
         df_groups_stem_inj.columns = df_MALM_icsd[tuple_cols_2_select_stem].columns
-
+    
         df_groups_stem_inj.T.droplevel(level=[0,2]).plot(xlabel='date', ylabel=ylabel, ax=ax,
                                     linestyle='--',
                                     marker=marker,
-                                    label='stem inj. sum curr.',
+                                    #label='stem inj. sum curr.',
                                     color=color)
         
            
     return ax
+
+
+
+
+def plot_PRD_effect_icsd_gravity(k_indiv_merged, vrte_in_mesh, 
+                                 df_MALM_icsd, irr_log,
+                                 ax=None,
+                                 hours_interval=10,
+                                 **kwargs):
+
+        
+    ylabel = r'Normalised Current Density' #' (A.m^{-2}$)'
+    if 'ylabel' in kwargs:
+        ylabel = kwargs['ylabel']
+        
+    soil = True
+    if 'soil' in kwargs:
+        soil = kwargs['soil']
+
+    # color=['red','grey','blue']
+    color=['darkgreen','darkorange']
+
+    if 'color' in kwargs:
+        color = kwargs['color']
+   
+    marker='v'
+    if 'marker' in kwargs:
+        marker = kwargs['marker']
+        
+        
+    if ax == None:
+        fig, ax = plt.subplots(figsize=(8.8, 4), constrained_layout=True)
+
+    meshXYZ, split_x_zones = set_Xlim_LR_from_mesh(k_indiv_merged)
+    xvrte, yvrte = [meshXYZ['X'][vrte_in_mesh],meshXYZ['Y'][vrte_in_mesh]]
+    df_MALM_icsd = df_MALM_icsd.T
+    tuple_cols_2_select_soil = []
+    tuple_cols_2_select_stem = []
+    
+    for tc in zip(df_MALM_icsd.columns):
+        if tc[0][2] is not None:
+            if ('Soil' in tc[0][2]):
+                tuple_cols_2_select_soil.append(tc[0])
+            if ('Stem' in tc[0][2]):
+                tuple_cols_2_select_stem.append(tc[0])
+
+    
+        stem_inject_df_MALM = df_MALM_icsd[tuple_cols_2_select_stem]
+    
+    CM = []
+    for i in range(len(stem_inject_df_MALM.T)):
+        masses = np.array([xvrte.values,yvrte.values,stem_inject_df_MALM.T.iloc[i].values]).T
+        nonZeroMasses = masses[np.nonzero(masses[:,2])] 
+        CM.append(np.average(nonZeroMasses[:,:2], axis=0, weights=nonZeroMasses[:,2]))
+
+    CM = np.vstack(CM)
+    
+    print(CM)
+    dates2plot = stem_inject_df_MALM.T.index.get_level_values(1) 
+    
+    ax.plot(dates2plot,CM[:,0],c='k',marker='v')
+    # ax.plot(dates2plot,CM[:,1],c='b')
+           
+    return ax
+
+
+
 
 def plot_PRD_effect_SWC(k_indiv_merged, df_SWC, irr_log,
                        ax=None,
@@ -506,7 +576,7 @@ def plot_PRD_effect_MALM(k_indiv_merged, df_MALM, ax=None,
 
 
 def plot_timeline(ERT_log, irr_log, ax=None,
-                  show=False, **kwargs):
+                  show=False, legend=True, **kwargs):
     dates_ERT = ERT_log['datetime']
     names = ERT_log['method']
 
@@ -518,7 +588,7 @@ def plot_timeline(ERT_log, irr_log, ax=None,
 
     dates_irr = irr_log['datetime']
     ml_irr = irr_log['quantity (mL)']
-
+    
     id_left = irr_log[irr_log['where']=='H1;H2'].index.tolist()
     id_right = irr_log[irr_log['where']=='H7;H8'].index.tolist()
     id_left4h = irr_log[irr_log['where'].str.contains("H1;H2;H3;H4")].index.tolist()
@@ -538,9 +608,10 @@ def plot_timeline(ERT_log, irr_log, ax=None,
     for i, datesi in enumerate(dates_irr):
         ax.axvline(x = datesi, color = 'k', alpha=0.5,
                     linestyle='dotted')
-        ax.text(datesi, 1, 
+        # ax.text(datesi, 0, 
+        ax.text(datesi, -100, 
                 'C' + str(irr_log['PRD Cycle nb'].iloc[i]),
-                  size=12, rotation=45.,
+                  size=6, rotation=45.,
                   ha="right", va="top",
                   bbox=dict(boxstyle="square",
                             ec=(1., 0.5, 0.5),
@@ -551,23 +622,45 @@ def plot_timeline(ERT_log, irr_log, ax=None,
 
 
     irr_log['color_plot'] = 'darkorange'
-    try:
-        for idl in id_left:
-            irr_log['color_plot'][idl] = 'darkgreen'
-        for idl in id_left4h:
-            irr_log['color_plot'][idl] = 'lightgreen'
-        for idl in id_right4h:
-            irr_log['color_plot'][idl] = 'peachpuff'    
-        for idl in id_all:
-            irr_log['color_plot'][idl] = 'black'
+    # try:
+    for idl in id_left:
+        irr_log['color_plot'][idl] = 'darkgreen'
+    for idl in id_left4h:
+        irr_log['color_plot'][idl] = 'lightgreen'
+    for idl in id_right4h:
+        irr_log['color_plot'][idl] = 'peachpuff'    
+    for idl in id_all:
+        irr_log['color_plot'][idl] = 'black'
 
-    except:
-        pass
+    # except:
+        # pass
 
-    ax.bar(dates_irr, levels_irr, color=irr_log['color_plot'])
+
+    c = ax.bar(dates_irr, levels_irr, color=irr_log['color_plot'], 
+              )
     ax.set_ylabel('Input water (mL)')
     ax.set_xlabel('Date')
     
+
+    try:
+        if legend:
+            c_s = np.array(c[:])
+            # ax.legend(c_s[[0,1,2,4,6]], ['Full', 'Left (4H)', 'Right (4H)','Partial Left (2H)','Partial Right (2H)'],
+            #           title="Irrigation type",
+            #           bbox_to_anchor=(.5, 1.2), loc='center',
+            #           ncol=5)
+            
+            ax.legend(c_s[[0,1,2,4,6]], ['Full', 'Partial Left (4H)', 'Partial Right (4H)','Right (2H)','Left (2H)'],
+                      title="Irrigation type",
+                      bbox_to_anchor=(.5, 1.2), loc='center',
+                      ncol=5)
+            
+            # ax.legend(c_s[[0,1,2,3,4]], ['Full', 'Left (4H)', 'Right (4H)','Partial Left (2H)','Partial Right (2H)'],
+            #           title="Irrigation type",
+            #           bbox_to_anchor=(.5, 1.2), loc='center',
+            #           ncol=5)
+    except:
+        pass
     if show:
         plt.show()
     return ax
@@ -624,7 +717,7 @@ def load_ERT_survey_log_drive():
 
 
 def load_ERT_survey_log(csv2read=('/home/ben/Documents/GitHub/BenjMy/' +
-                                  'rhizotron_PRD/imaging_ERT_MALM/' +
+                                  'rhizotron_PRD/imaging_ERT_MALM_PaperREV1/' +
                                   'PRD_Measurements_log - 2nd_run.csv'),
                         startDate=None,
                         endDate=None,

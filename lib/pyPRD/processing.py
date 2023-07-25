@@ -235,13 +235,7 @@ def prepare_MALM_synth(path, filename, k_ERT, idS=[10], parallel=False,
                                    'VRTeCoord.txt')):
         k_MALM = Project(dirname=os.path.join(path, filename), typ='R3t')
         k_MALM.loadProject(os.path.join(path, filename  + "backup.resipy"))
-        
-        # k_MALM, R_obs = create_MALM_project(path,filename,**kwargs)
-        
-        # imin, nodes, grid = create_source_grid(k_MALM.mesh.df, k_MALM, **kwargs)
-        # outMALM = [k_MALM, imin, None , nodes, None, None, None, None]
         outMALM = [k_MALM, None, None , None, None, None, None, None]
-        # k_MALM, imin, R_obs, nodes, R_icsd, R_sim, idS, wS
         
         return outMALM
 
@@ -342,6 +336,7 @@ def plot_scatter3d_onmesh(point_cloud,interpolated,scalars='csd',pl=None,**kwarg
     
     actor = pl.show_bounds(grid='front', location='outer',
                             all_edges=True)
+    
     # pl.show()
     return pl
 
@@ -485,18 +480,21 @@ def invert_MALM(path,pareto=False,show=False,**kwargs):
     
     typ = '3d'
     wr = 1
+    obs_err = 'sqrt'
     if 'wr' in kwargs:
         wr = kwargs['wr']
     if 'typ' in kwargs:
         typ = kwargs['typ']
     if 'prior' in kwargs:
         prior = kwargs['prior']
-            
+    if 'obs_err' in kwargs:
+        obs_err = kwargs['obs_err']
+        
     icsd=i3d(dirName=path +'/')   
     icsd.regMesh='unstrc'
     icsd.type=typ
     # #icsd.mesh='invdir/fwd/forward_model.vtk'
-    icsd.obs_err='sqrt' # sqrt choose between constant weight and w = 1/sqrt(abs(obs))
+    icsd.obs_err=obs_err # sqrt choose between constant weight and w = 1/sqrt(abs(obs))
     icsd.wr=wr #weight regularization
     # icsd.alphaSxy=False
     icsd.x0_prior=prior
@@ -655,6 +653,8 @@ def filter_sequence_rec(k_MALM):
     
     df_new = k_MALM.surveys[0].df  
     condition = (df_new['a']!=72)
+    
+    np.sum(condition)
     df_new.drop(df_new[condition].index, inplace=True)
     Robs = df_new['resist']
     
@@ -697,7 +697,9 @@ def create_MALM_project(path,filename,**kwargs):
     # because one missing electrode in the sequence so reduced to 71!
     # if k_MALM.surveys[0].df['a'].all() == '71':
     #     k_MALM.surveys[0].df['a'] = k_MALM.surveys[0].df['a'].replace('71','72')
-
+    k_MALM.surveys[0].df['a'] 
+    len(k_MALM.surveys[0].df['a'])
+    
     k_MALM.importElec(root_path + "mesh/elecsXYZ.csv")
     
     # k_MALM.sequence
@@ -738,6 +740,7 @@ def create_MALM_project(path,filename,**kwargs):
 
     try:
         k_MALM.filterRecip(percent=percent_rec)
+        # k_MALM.filterRecip(percent=10)
     except:
         print('can''t find reciprocals')
         # pass
@@ -764,6 +767,10 @@ def create_MALM_project(path,filename,**kwargs):
 
     k_MALM.surveys[0].df[['a','b','m','n']]= k_MALM.surveys[0].df[['a','b','m','n']].astype('str')
 
+
+    # k_MALM.surveys[0].df['a'] 
+    # k_MALM.surveys[0].df['b'] 
+    len(k_MALM.surveys[0].df['a'])
     # k.showErrorDist()
     # k.filterManual(index=0, attr="resist" # interactive plot)
     
@@ -772,7 +779,7 @@ def create_MALM_project(path,filename,**kwargs):
                   legend='A=(stem of soil), B=71, M=64',
                   style='o-', label=filename, ax=kwargs['ax'])
     Robs.rename(filename, inplace=True)
-    
+    len(Robs)
     return k_MALM, Robs
 
 
@@ -1037,7 +1044,7 @@ def plot_scatter_MALM(imaging_path,df_MALM,k,
                 plt.annotate(j_label,(xelecs.iloc[i_label],yelecs.iloc[i_label]))
     
             ax.set_xlabel('x (m)')
-            ax.set_ylabel('y (m)')
+            ax.set_ylabel('z (m)')
     
             ax.set_title(str(f[0]))
             
@@ -1131,7 +1138,7 @@ def plot_scatter_MALM_diff(imaging_path,df_MALM,k_indiv_merged,
                         cbar = plt.colorbar(cmap, ax=ax)
                         cbar.set_label(subkey_name+ '(Ohm)') #, rotation=270)
                     ax.set_xlabel('x (m)')
-                    ax.set_ylabel('y (m)')
+                    ax.set_ylabel('z (m)')
         
                     ax.set_title((diff_keyname,subkey_name))
                     
@@ -1191,7 +1198,7 @@ def plot_scatter_MALM_diff_stem_soil(imaging_path,df_MALM,k_indiv_merged,
                 cbar.set_label('Stem-Soil (Ohm)')#, rotation=270)
                 
             ax.set_xlabel('x (m)')
-            ax.set_ylabel('y (m)')
+            ax.set_ylabel('z (m)')
 
             ax.set_title(lgd)
             lgd += 'Stem-Soil (Ohm)'
@@ -1276,11 +1283,20 @@ def plot_ERT(k, vmin=0, vmax=300, attr="Resistivity(log10)", index=0, path='',
              **kwargs):
     '''
     '''
-        
+    #%%
+    import vtk
     color_map = 'jet'
+    titlecbar = r'ER' + '\n' + r'($\Omega$.m)'
+    if "Resistivity(log10)" in attr:
+        titlecbar = r'log10(ER)' + '\n' + r'($\Omega$.m)'
+
     if "difference(percent)" in attr:
         color_map = 'bwr'
+        titlecbar = r'$\Delta ER$' + '\n' + r'$\%$'
     
+    fi = ''
+    if 'fi' in kwargs:
+        fi = kwargs['fi']
     mesh = k.mesh.df
 
     # pl.colorbar_orientation = 'vertical'  
@@ -1294,13 +1310,14 @@ def plot_ERT(k, vmin=0, vmax=300, attr="Resistivity(log10)", index=0, path='',
         #                 )
         
    
-    sargs = dict(height=0.05, 
-                 width=0.25,
-                 vertical=False, 
-                 position_x=0.35, 
-                 #position_y=0.015,
-                 title_font_size=45,
-                 label_font_size=45,
+    sargs = dict(height=0.35, 
+                 width=0.05,
+                 vertical=True, 
+                 position_x=0.035, 
+                 position_y=0.6,
+                 title_font_size=30,
+                 label_font_size=30,
+                 title=titlecbar,
                  )
 
     k.showResults(
@@ -1310,28 +1327,24 @@ def plot_ERT(k, vmin=0, vmax=300, attr="Resistivity(log10)", index=0, path='',
                   vmin=vmin, vmax=vmax,
                   color_map=color_map,
                   background_color='white',
-                  pvgrid = True,
+                  pvgrid = False,
                   use_pyvista=True,
                   pvshow=False,
                   xlim=[mesh['X'].min(),mesh['X'].max()],
                   ylim=[mesh['Y'].min(),mesh['Y'].max()], 
                   zlim=[mesh['Z'].min(),mesh['Z'].max()],  
-                  scalar_bar_args=sargs,
+                   scalar_bar_args=sargs,
                   pvdelaunay3d=True,
-                  **kwargs)
+                  # color_bar=True,
+                  # hor_cbar=False,
+                  # )
+                   **kwargs)
     
     
     # ax.camera_position = 'xz'
     # ax.camera.azimuth = 15
     # ax.camera.elevation = 15
     # # ax.camera.roll += 10
-    ax.set_scale(1.1, 1.1, 1.1)
-    ax.show_bounds(grid=False, location='outer', all_edges=False, font_size=30,
-                   xlabel='X (m)',
-                   zlabel='Z (m)',
-                   show_yaxis=False,
-                   ticks='outside',
-                   use_2d=True)
 
 
 
@@ -1341,6 +1354,17 @@ def plot_ERT(k, vmin=0, vmax=300, attr="Resistivity(log10)", index=0, path='',
     else:
         ax.view_xz()
     
+    ax.set_scale(1.1, 1.1, 1.1)
+    ax.show_bounds(grid=False, location='origin', 
+                   all_edges=False, 
+                   font_size=30,
+                   xlabel='X (m)',
+                   zlabel='Z (m)',
+                   show_yaxis=False,
+                   # ticks='outside',
+                   use_2d=False)
+
+
     # pl.scalar_bars
     # pl.view_xz()
     #actor = pl.show_grid()
@@ -1365,7 +1389,7 @@ def plot_ERT(k, vmin=0, vmax=300, attr="Resistivity(log10)", index=0, path='',
     
     if 'png' in ext:
         
-        hsize = 2000
+        hsize = 1150
         # pl.ren_win.OffScreenRenderingOn()
         # pl.enable_anti_aliasing()
         # pl.screenshot('../src/image/paper3d/mesh-types.jpg', transparent_background=True,
@@ -1374,12 +1398,13 @@ def plot_ERT(k, vmin=0, vmax=300, attr="Resistivity(log10)", index=0, path='',
         # pl.ren_win.OffScreenRenderingOff()
         # pl.ren_win.Render()
 
-        ax.screenshot(k.dirname + '/' + attr + '_time' + str(index) + ".png",
+        ax.screenshot(k.dirname + '/' + attr + '_time' + str(index) + fi + ".png",
                       window_size=[hsize, hsize])
     if 'svg' in ext:
-        ax.save_graphic(k.dirname + '/' + attr + '_time' + str(index) + ".svg")  
+        ax.save_graphic(k.dirname + '/' + attr + '_time' + str(index) + fi + ".svg")  
         # pl.save_graphic(k.dirname + '/' + attr + '_t' + str(index) + ".eps")  
 
+    #%%
     # pl.window_size = window_size
     
     # k.meshResults[0].

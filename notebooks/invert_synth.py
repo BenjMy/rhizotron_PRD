@@ -21,7 +21,7 @@ def get_cmd():
 
     period = parse.add_argument_group('period')
     period.add_argument('-cycle', '--cycle', nargs='+',
-                        help='list of cycle', type=int, default=[7], required=False)
+                        help='list of cycle', type=int, default=[-99], required=False)
     period.add_argument(
         '-startD', type=str, help='start date to analyse', default='None', required=False)
     period.add_argument('-endD', type=str, help='end date',
@@ -30,15 +30,25 @@ def get_cmd():
 
     process_param = parse.add_argument_group('process_param')
     process_param.add_argument(
-        '-scenario', type=str, help='Scenario', default='Abis', required=False)
+        '-scenario', type=str, help='Scenario', default='4Sbis2', required=False)
     process_param.add_argument(
         '-recErr', type=int, help='Rec. error', default=5, required=False)
     process_param.add_argument(
-        '-filter_seq', type=int, help='filter sequence', default=1, required=False)
+        '-filter_seq', type=int, help='filter sequence', default=0, required=False)
     process_param.add_argument('-filter_seq_rec', type=int,
-                               help='filter sequence rec', default=0, required=False)
+                               help='filter sequence rec', default=1, required=False)
     process_param.add_argument(
-        '-reprocessed', type=int, help='reprocessed', default=1, required=False)
+        '-reprocessed', type=int, help='reprocessed', default=0, required=False)
+    process_param.add_argument('-anisotropy', type=float,
+                               help='anisotropy procesing', default=1, required=False)
+    process_param.add_argument('-pareto', type=int,
+                               help='pareto', default=1, required=False)
+    process_param.add_argument('-wr', type=float,
+                               help='reg. weight', default=1, required=False)
+    process_param.add_argument('-obs_err', type=str,
+                               help='obs_err. weight', default='const', required=False)
+    
+    
     args = parse.parse_args()
     return(args)
 
@@ -46,42 +56,44 @@ def get_cmd():
 args = get_cmd()
 
 # cycle 7
-args.startD = '29/6/2022,14:14'
-args.endD = '29/6/2022,15:03'
+# args.startD = '29/6/2022,14:14'
+# args.endD = '29/6/2022,15:03'
 
-
+args.startD = '11/7/2022,15:49'
+args.endD = '11/7/2022,17:11' #17h10 8 returns
 # args.startD = '8/6/2022,9:59'
 # args.endD = '8/6/2022,11:31'
 
 
 sc_nb = args.scenario
 
+
+
 def define_sources_prop(sc_nb):
     
     ls_sc = {
-                'A': {'idS': [0], 'wS': [1], 'rho0':100,'prior': False,'reduce2d':True,
+                '1S': {'idS': [59], 'wS': [1], 'rho0':100,'prior': False,'reduce2d':True,
                       },
-                'Abis': {'idS': [12], 'wS': [1], 'rho0':100,'prior': False,'reduce2d':True,
+                '1S_ERT': {'idS': [59], 'wS': [1], 'rho0':None,'prior': False,'reduce2d':True,
                       },
-                'B': {'idS': [20], 'wS': [1], 'rho0':100,'prior': False,'reduce2d':True,
-                      },
-                'B3d': {'idS': [20], 'wS': [1], 'rho0':100,'prior': False,'reduce2d':False,
-                      },
-                'C': {'idS': [2], 'wS': [1], 'rho0':100,'prior': False,'reduce2d':True,
-                      }, # Same as B but with real background
-                'Cbis': {'idS': [2], 'wS': [1], 'rho0':None,'prior': False,'reduce2d':True,
-                      }, # Same as B but with real background
-                'D': {'idS': [20], 'wS': [1], 'rho0':None, 'prior': True,'reduce2d':True,
-                      },# Same as C but with prior m0
-                'E': {'idS': [12,20], 'wS': [0.5,0.5], 'rho0':100,'reduce2d':True,
+                '2S': {'idS': [59,89], 'wS': [0.5,0.5], 'rho0':100,'reduce2d':True,
                       'prior': False,
                       },
-                'E3d': {'idS': [12,20], 'wS': [0.5,0.5], 'rho0':100,'reduce2d':False,
+                '3S': {'idS': [59,89,100], 'wS': [1/3,1/3,1/3], 'rho0':100,'reduce2d':True,
                       'prior': False,
                       },
-                'F': {'idS': [12,20], 'wS': [0.85,0.15], 'rho0':None,'reduce2d':True,
+                '4S': {'idS': [59,89,100,110], 'wS': [1/4,1/4,1/4,1/4], 'rho0':100,'reduce2d':True,
                       'prior': False,
                       },
+                '4Sbis': {'idS': [59,89,100,110], 'wS': [1/2,(1/2)/3,(1/2)/3,(1/2)/3], 'rho0':100,'reduce2d':True,
+                      'prior': False,
+                      },
+                '4Sbis_ERT': {'idS': [59,89,100,110], 'wS': [1/2,(1/2)/3,(1/2)/3,(1/2)/3], 'rho0':None,'reduce2d':True,
+                      'prior': False,
+                      },
+               '4Sbis2': {'idS': [59,89,100,110], 'wS': [1/10,(9/10)/3,(9/10)/3,(9/10)/3], 'rho0':100,'reduce2d':True,
+                     'prior': False,
+                     },
         }
 
     return ls_sc[sc_nb]
@@ -104,7 +116,7 @@ inversionPathMALM = definePaths(args,sc_nb)
 
 ERT_log = surveyPRD.load_ERT_survey_log(startDate=args.startD, endDate=args.endD,
                                         cycles=args.cycle)
-irr_log = surveyPRD.load_irr_log_drive(startDate=args.startD, endDate=args.endD,
+irr_log = surveyPRD.load_irr_log(startDate=args.startD, endDate=args.endD,
                                        cycles=args.cycle)
 
 selected_files_ERT = ERT_log[ERT_log['method'] == 'ERT']['Name'].to_list()
@@ -114,9 +126,9 @@ selected_files_MALM = ERT_log[ERT_log['method'] == 'MALM']['Name'].to_list()
 
 # %%
 ax = surveyPRD.plot_timeline(ERT_log, irr_log, dropMALM=True)
-tdelta = (ERT_log['datetime'].iloc[0]-ERT_log['datetime'].iloc[-1])/10
-ax.get_xaxis().set_major_locator(mdates.HourLocator(interval=55))
-ax.get_xaxis().set_major_formatter(mdates.DateFormatter("%d/%m - %Hh"))
+# tdelta = (ERT_log['datetime'].iloc[0]-ERT_log['datetime'].iloc[-1])/10
+# ax.get_xaxis().set_major_locator(mdates.HourLocator(interval=55))
+# ax.get_xaxis().set_major_formatter(mdates.DateFormatter("%d/%m - %Hh"))
 
 
 # %%
@@ -164,12 +176,11 @@ for f in selected_files_MALM[:]:
     a, b, m = [72, 65, 71]
     # test for anisotropy type MALM
     # -----------------------------
+    filterSeq = args.filter_seq
     if '8returns' in f:
-        a, b, m = [72, 65, 71]
-        # a = 72
-        # b = 64
-        # m = None
-
+        filterSeq = False
+        m = None
+        
     outMALM = proc.prepare_MALM_synth(imaging_path+inversionPathMALM,
                                       f,
                                       k_indiv_merged[0],
@@ -178,7 +189,7 @@ for f in selected_files_MALM[:]:
                                       idS=idS,
                                       wS=wS,
                                       filter_seq_rec=args.filter_seq_rec,
-                                      filter_seq=args.filter_seq,
+                                      filter_seq=filterSeq,
                                       a=a, b=b, m=m,
                                       percent_rec=args.recErr,
                                       rho0= scenario['rho0'],
@@ -237,6 +248,18 @@ for f in selected_files_MALM[:]:
 
     k_MALM_stk.append(k_MALM)
     xyz_sol = nodes[imin[idS]]
+    
+    
+    # xyz_sol = nodes[imin[7*9-4]]
+    # xyz_sol = nodes[imin[7*9+26]]
+    # xyz_sol = nodes[imin[100]]
+    # xyz_sol = nodes[imin[110]]
+
+    # xyz_sol = nodes[imin[80]]
+    # xyz_sol = nodes[imin[82]]
+    # xyz_sol = nodes[imin[84]]
+
+
     # xyz_sol = nodes[imin[idS]]
     
     # if len(R_obs_stck)>0:
@@ -291,6 +314,9 @@ for f in selected_files_MALM[:]:
 
 # k_MALM.df
 
+
+        
+        
 # %%
 dim = '3d'
 if scenario['reduce2d']:
@@ -314,25 +340,101 @@ for i, f in enumerate(selected_files_MALM[:]):
 
 # %%
 for i, f in enumerate(selected_files_MALM[:]):
+    print(xyz_sol)
+
     # f = selected_files_MALM[2]
     pareto = False
     sol = proc.invert_MALM(imaging_path + inversionPathMALM + f,
-                           pareto=pareto, wr=1e-2, typ=dim,
-                           prior=scenario['prior']
+                           pareto=args.pareto, wr=args.wr, typ=dim,
+                           prior=scenario['prior'],
+                           obs_err=args.obs_err
                            )
     
-    if pareto:
-        sol = sol[0].solution
-        proc.plot_MALM(k_MALM_stk[i], sol, show=False, ext=['png'])
+    if args.pareto:
+        proc.plot_MALM(k_MALM_stk[i], sol[1], show=False, ext=['png'])
         # proc.plot_MALM(k_MALM[i],sol,show=True,ext=['svg'])
     else:
-        proc.plot_MALM(k_MALM_stk[i], sol, show=False, ext=['png'],
+        proc.plot_MALM(k_MALM_stk[i], sol[1], show=False, ext=['png'],
                        )
         # proc.plot_MALM(k_MALM_stk[i], sol, show=False, ext=['png'],
         #                log_scale=True)
         # proc.plot_MALM(k_MALM[i],sol,show=True,ext=['svg'])
-            
-    # if pareto:
+      
+    # f, axs = plt.subplots(1)
+    ax, fig = sol[0].showResults(
+                                # ax=axs,
+                                # fig_name=str(dates[i]),
+                                lgd_label='',
+                                # cbarplot=cbarplot,
+                                clim=[0,1],
+                                vrte_pos=False,
+                                )
+    ax.scatter(xyz_sol[:,0],xyz_sol[:,2],color='c',marker='+',s=100)
+    fig.savefig(imaging_path + inversionPathMALM + f + 'ICSD.png')
+    
+
+if bool(args.anisotropy):
+    k_MALM_anisotropy = []
+    m0_anisotropy = []
+    for i, f in enumerate(selected_files_MALM):
+        if '8returns' in f:
+            # b_return = [1,4,8,17,20,24,33,36,40,49,52,64]
+            b_return = [1,8,17,24,36,49,64]
+            for k in range(len(b_return)):
+                print('*'*24)
+                print(k,f)
+                print('*'*24)
+                fnew = f.split('.csv')[0] + '_B'+ str(b_return[k])
+                background_ERT_time = int(f.split('_')[2])
+                for j, n in enumerate(ERT_log['Name'][ERT_log['method'] == 'ERT']):
+                    if 'PRD_ERT_' + str(background_ERT_time) in n:
+                        index_ERT_backgrd = j
+                outMALM = proc.prepare_MALM_synth(imaging_path + inversionPathMALM,
+                                                    fnew,
+                                                    k_indiv_merged[index_ERT_backgrd],
+                                                    nVRTe_cols=6*2+1, nVRTe_rows=4*2+1,
+                                                    idS=idS,
+                                                    wS=wS,
+                                                    filter_seq_rec=args.filter_seq_rec,
+                                                    filter_seq=args.filter_seq,
+                                                    reduce2d=True,
+                                                    percent_rec=args.recErr,
+                                                    a=72, b=b_return[k], m=None,
+                                                    rho0= scenario['rho0'],
+                                                    retElec=k_indiv_merged[0].elec[['x','z']].iloc[b_return[k]-1].to_numpy(),
+                                                    )
+                k_MALM_anisotropy.append(outMALM[0])
+                
+                m0i,ax,fig = proc.m0_MALM(imaging_path + inversionPathMALM + fnew,
+                                       method_m0='F1', typ='2d',
+                                       show=True
+                                       )
+                ax.scatter(xyz_sol[:,0],xyz_sol[:,2],color='c',marker='+',s=100)
+                # plt.close()
+                fig.savefig(os.path.join(imaging_path,inversionPathMALM, fnew,'m0' + '_breturn' + str(b_return[k]) + '.png')
+                            , dpi=300)
+                m0_anisotropy.append(m0i)
+                
+                icsd, sol, ax, fig = proc.invert_MALM(imaging_path + inversionPathMALM + fnew,
+                                            wr=args.wr, typ='2d', pareto=args.pareto, show=True,
+                                            prior = False,                                                        
+                                            clim=[0,1],
+                                            retElec=k_indiv_merged[0].elec[['x','z']].iloc[b_return[k]-1].to_numpy()
+                                            # fname_sim='VRTeSim_icsd.txt'
+                                            )
+                
+                ax.scatter(xyz_sol[:,0],xyz_sol[:,2],color='c',marker='+',s=100)
+                fig.savefig(os.path.join(imaging_path,
+                                         inversionPathMALM, 
+                                         fnew,
+                                         '_breturn' + str(b_return[k]) + 
+                                         '_icsd.png'), 
+                            dpi=300)
+                plt.close('all')
+            plt.close('all')
+        
+        
+# if pareto:
     # proc.plot_MALM(k_MALM_stk[i],sol[0])
     # else:
     # proc.plot_MALM(k_MALM_stk[i], sol,

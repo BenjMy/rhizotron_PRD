@@ -1,0 +1,89 @@
+
+
+ >> R 3 t     E R T    M o d e l    v 2.31 <<
+
+ >> Date: 19-07-2023
+ >> My beautiful 3D survey                                                          
+ >> A d v a n c e d   M e s h   I n p u t <<
+ >> T e t r a h e d r a l   E l e m e n t   M e s h <<
+
+
+ >> Parameterisation
+    Total number of parameters:                  41878
+    Number of elements with fixed resistivity:       0
+    Number of parameter regularisation zones:        1
+    Regularisation zone   1   alpha scalar:        1.0
+ >> Reading resistivity model from res0.dat                                                                        
+
+ >> L o g - D a t a   I n v e r s i o n <<
+ >> N o r m a l   R e g u l a r i s a t i o n <<
+    For   1000 measurements the memory needed is:          0.349 Gb
+    For   2000 measurements the memory needed is:          0.684 Gb
+    For   5000 measurements the memory needed is:          1.690 Gb
+    For  10000 measurements the memory needed is:          3.365 Gb
+
+
+ >> Number of measurements read: 2067
+
+ >> Total Memory required is:          0.707 Gb
+
+
+ Processing frame   1 - output to file f001.dat
+
+   Iteration   1
+     Initial RMS Misfit:        24.48      Number of data ignored:    12
+     Alpha:        4484.666   RMS Misfit:        2.18  Roughness:        1.143
+     Alpha:        2081.598   RMS Misfit:        2.13  Roughness:        1.242
+     Alpha:         966.192   RMS Misfit:        1.70  Roughness:        2.593
+     Alpha:         448.467   RMS Misfit:        2.43  Roughness:        4.043
+     Step length set to      1.000
+     Final RMS Misfit:        1.70
+     Data misfit:          5926.89
+     Model misfit:         2505.71
+     Total misfit:         8432.60
+     Updated data weights
+
+   Iteration   2
+     Initial RMS Misfit:         1.54      Number of data ignored:     6
+     Alpha:         518.988   RMS Misfit:        0.90  Roughness:        3.478
+     Step length set to      1.000
+     Final RMS Misfit:        0.90
+     Data misfit:          1684.97
+     Model misfit:         1804.87
+     Total misfit:         3489.84
+     Step length set to      0.773
+     Final RMS Misfit:        1.00
+
+ Solution converged - Outputing results to file
+
+ Calculating sensitivity map
+
+ End of data:  Terminating
+
+
+    Timing Summary
+    ==============
+    Total time taken:                               145. s
+
+    Percent time taken forming element equations:    0.1 %
+    Percent time taken solving forward  equations:   2.7 %
+    Percent time taken forming Jacobian:             7.1 %
+    Percent time taken solving inverse equations:   89.2 %
+    Percent time taken calculating res. matrix:      0.0 %
+
+    Timing Details
+    ==============
+    Number of calls to form element equations:         8
+    Average time taken in call:                      0.0 s
+    Number of calls to solve forward equations:      576
+    Average time taken in call:                      0.0 s
+    Number of calls to form Jacobian:                  2
+    Average time taken in call:                      5.2 s
+    Number of calls to solve inverse equations:        5
+    Average time taken in call:                     25.9 s
+    Number of calls to calculate res. matrix:          0
+    Average time taken in call:                      0.0 s
+
+
+ >> Program ended normally
+
