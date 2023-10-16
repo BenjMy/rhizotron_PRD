@@ -1,10 +1,10 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 authors:
-- family-names: "Mary"
-  given-names: "Benjamin"
-  orcid: "https://orcid.org/0000-0001-7199-2885"
-title: "Article's Figures: Codes and Data to Reproduce bg-2023-58"
-version: 1.0.0
-date-released: 2023-10-16
-url: "https://github.com/BenjMy/rhizotron_PRD"
+  - family-names: Druskat
+    given-names: Stephan
+    orcid: https://orcid.org/1234-5678-9101-1121
+title: "My Research Software"
+version: 2.0.4
+doi: 10.5281/zenodo.1234
+date-released: 2021-08-11
