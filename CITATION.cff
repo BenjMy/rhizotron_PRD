@@ -3,7 +3,7 @@ message: "If you use this software, please cite it as below."
 authors:
 - family-names: "Mary"
   given-names: "Benjamin"
-  orcid: "https://orcid.org/0000-0001-7199-2885""
+  orcid: "https://orcid.org/0000-0001-7199-2885"
 title: "rhizotron_PRD"
 version: 1.0.0
 doi: https://zenodo.org/doi/10.5281/zenodo.10014923
